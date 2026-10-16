@@ -1,6 +1,6 @@
 import * as T from 'three';
 
-/** Shared construction vocabulary for the three approved concept worlds. */
+/** Shared materials, with a different architectural vocabulary for every world. */
 export type WorldAnimation = { object: T.Object3D; axis: 'y' | 'z'; speed: number };
 export type WorldBuild = { animations: WorldAnimation[]; exhibits: T.Object3D[] };
 
@@ -141,7 +141,9 @@ function sign(parent: T.Object3D, text: string, x: number, y: number, z: number,
   ctx.fillStyle = '#f4f0e7'; ctx.fillRect(0, 0, 512, 112);
   ctx.fillStyle = color; ctx.font = '500 35px sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(text, 256, 57, 490);
   const texture = new T.CanvasTexture(canvas); texture.colorSpace = T.SRGBColorSpace;
-  return mesh(parent, new T.PlaneGeometry(width, width * 112 / 512), new T.MeshBasicMaterial({ map: texture, side: T.DoubleSide }), [x, y, z]);
+  const label = mesh(parent, new T.PlaneGeometry(width, width * 112 / 512), new T.MeshBasicMaterial({ map: texture, side: T.DoubleSide }), [x, y, z]);
+  label.userData.label = text;
+  return label;
 }
 
 function flowingRoof(parent: T.Object3D, x: number, z: number, width: number, depth: number, y: number, material: T.Material = pearl) {
@@ -376,5 +378,272 @@ export function buildProjectAtelier(parent: T.Group): WorldBuild {
   for (const x of [-5.8, -3.5, 3.5, 5.8]) planter(parent, x, 2.15, .47, .55, x < 0);
   tree(parent, -6, -.6, 1.1); tree(parent, 5.9, -.6, 1); tree(parent, 3.8, -3.55, .85);
   return { animations, exhibits };
+}
+
+const clay = new T.MeshStandardMaterial({ color: '#c88163', roughness: .8 });
+const brass = new T.MeshStandardMaterial({ color: '#d0b17b', metalness: .5, roughness: .4 });
+const teal = new T.MeshStandardMaterial({ color: '#5eaaa4', metalness: .25, roughness: .45 });
+const coral = new T.MeshStandardMaterial({ color: '#e79269', roughness: .55 });
+
+function arcPoints(radius: number, y: number, start: number, length: number, z = 0) {
+  return Array.from({ length: 41 }, (_, i) => {
+    const a = start + i / 40 * length;
+    return point(Math.cos(a) * radius, y, Math.sin(a) * radius + z);
+  });
+}
+function strut(parent: T.Object3D, a: T.Vector3, b: T.Vector3, material: T.Material, radius = .035) {
+  const direction = b.clone().sub(a);
+  const rod = mesh(parent, new T.CylinderGeometry(radius, radius, direction.length(), 6), material);
+  rod.position.copy(a).add(b).multiplyScalar(.5);
+  rod.quaternion.setFromUnitVectors(point(0, 1, 0), direction.normalize());
+  return rod;
+}
+
+/** A warm, open performance pavilion: woven ribs, acoustic waves, and an art court. */
+export function buildCulturalCrossroads(parent: T.Group): WorldBuild {
+  const animations: WorldAnimation[] = [];
+  disc(parent, 4.95, .24, [0, .28, 0], stone);
+  // Semicircular steps face the stage; the front stays open to the sky.
+  for (let i = 0; i < 4; i++) {
+    const tier = mesh(parent, new T.TorusGeometry(2.2 + i * .48, .19, 8, 52, Math.PI * 1.22), i % 2 ? clay : pearl, [0, .55 + i * .18, 0]);
+    tier.rotation.x = Math.PI / 2; tier.rotation.z = -.35;
+  }
+  const stage = disc(parent, 1.8, .2, [0, .62, .1], clay); stage.scale.z = .8;
+  // Interlaced petal ribs, rather than towers or a closed technological dome.
+  for (let i = 0; i < 11; i++) {
+    const a = i / 11 * Math.PI * 2;
+    const points = Array.from({ length: 25 }, (_, k) => {
+      const t = k / 24, theta = a + t * 1.35, radius = 2.85 * Math.sin(t * Math.PI * .84);
+      return point(Math.cos(theta) * radius, 4.9 - t * 4, Math.sin(theta) * radius - .6);
+    });
+    tube(parent, points, i % 3 === 0 ? brass : pearl, .075);
+    if (i % 2 === 0) tube(parent, points.map(p => p.clone().add(point(.06, 0, 0))), amber, .018);
+  }
+  // A globe-like woven lantern symbolizes connection without repeating Future's Earth.
+  const lantern = new T.Group(); lantern.position.set(0, 2.7, -.5); parent.add(lantern);
+  for (let i = 0; i < 5; i++) {
+    const hoop = mesh(lantern, new T.TorusGeometry(.78, .025, 6, 48), i % 2 ? brass : teal);
+    hoop.rotation.y = i * Math.PI / 5;
+  }
+  ring(lantern, .8, [0, 0, 0], brass, .035);
+  animations.push({ object: lantern, axis: 'y', speed: .045 });
+  // Art folios and a flowing, spatial music staff on opposite sides of the court.
+  for (let i = 0; i < 3; i++) {
+    const folio = new T.Group(); folio.position.set(-3.35 + i * .65, 1.7, 1.15); folio.rotation.y = .35; parent.add(folio);
+    box(folio, brass, [0, 0, 0], [.57, 1.4, .08]);
+    box(folio, [clay, teal, rose][i], [0, 0, .055], [.43, 1.24, .035]);
+    ring(folio, .14, [0, .15, .1], amber, .018).rotation.x = 0;
+    column(parent, folio.position.x, folio.position.z, .4, .65, .04);
+  }
+  for (let j = 0; j < 5; j++) {
+    tube(parent, Array.from({ length: 21 }, (_, i) => point(1.6 + i * .12, 1.2 + j * .14 + Math.sin(i * .18) * .32, 1.95)), brass, .013);
+  }
+  for (let i = 0; i < 5; i++) {
+    const x = 1.9 + i * .43, y = 1.3 + (i % 3) * .2;
+    ball(parent, clay, [x, y, 1.94], [.1, .07, .045]); column(parent, x + .08, 1.94, y, .45, .014, brass);
+  }
+  skyWalk(parent, [point(-1.2, .46, 4.6), point(-.4, .6, 2.9), point(.7, .72, 1.3)], .9, pearl, false, amber);
+  for (const [x, z] of [[-3.7, -1.8], [3.7, -1.5], [3.9, 1], [-2, 3.4]]) tree(parent, x, z, .8, x < 0);
+  sign(parent, 'ART · MUSIC · STORIES', 0, .95, 3.2, 2.5);
+  return { animations, exhibits: [] };
+}
+
+/** An asymmetric workshop with visible bracing, build benches, and a kinetic prototype. */
+export function buildInventionYard(parent: T.Group): WorldBuild {
+  const animations: WorldAnimation[] = [];
+  roundedSlab(parent, 9.1, 7.2, .25, .3, ink);
+  roundedSlab(parent, 8.5, 6.6, .1, .56, pearl);
+  // Offset open gantry. Triangular braces keep its identity industrial and energetic.
+  for (const x of [-3.4, 2.7]) {
+    box(parent, coral, [x, 2.9, -1.6], [.2, 4.6, .2]);
+    strut(parent, point(x, .65, -2.7), point(x, 3, -1.6), silver, .065);
+    strut(parent, point(x, .65, -.5), point(x, 3, -1.6), silver, .065);
+  }
+  box(parent, coral, [-.35, 5.2, -1.6], [6.8, .28, .32]);
+  for (let i = 0; i < 7; i++) {
+    strut(parent, point(-3.3 + i * .88, 5, -1.6), point(-2.86 + i * .88, 5.45, -1.6), brass, .025);
+  }
+  box(parent, ink, [.8, 4.95, -1.6], [.65, .3, .6]);
+  strut(parent, point(.8, 4.8, -1.6), point(.8, 3.5, -1.6), silver, .025);
+  const suspended = new T.Group(); suspended.position.set(.8, 3, -1.6); parent.add(suspended);
+  mesh(suspended, new T.TorusKnotGeometry(.62, .105, 64, 8), coral);
+  const cage = mesh(suspended, new T.IcosahedronGeometry(.95, 0), new T.MeshBasicMaterial({ color: '#74cddd', wireframe: true }));
+  cage.rotation.z = .3; animations.push({ object: suspended, axis: 'y', speed: .32 });
+  // Distinct prototype benches along an L-shaped working aisle.
+  const positions = [[-2.6, 1.65], [-.1, 2.3], [2.7, 1.45]];
+  positions.forEach(([x, z], i) => {
+    const station = new T.Group(); station.position.set(x, 0, z); parent.add(station);
+    roundedSlab(station, 1.85, 1.15, .13, 1.15, stone);
+    for (const dx of [-.65, .65]) box(station, ink, [dx, .9, 0], [.1, .65, .75]);
+    box(station, ink, [-.4, 1.55, -.3], [.65, .48, .07]);
+    box(station, cyan, [-.4, 1.55, -.25], [.5, .31, .015]);
+    const prototype = new T.Group(); prototype.position.set(.4, 1.7, .05); station.add(prototype);
+    if (i === 0) mesh(prototype, new T.OctahedronGeometry(.3), pink);
+    if (i === 1) { box(prototype, teal, [0, -.1, 0], [.5, .22, .4]); for (const dx of [-.3, .3]) ball(prototype, ink, [dx, -.2, 0], [.09, .09, .09]); }
+    if (i === 2) { ring(prototype, .3, [0, 0, 0], coral, .06).rotation.x = .5; ball(prototype, cyan, [0, 0, 0], [.1, .1, .1]); }
+    animations.push({ object: prototype, axis: 'y', speed: .2 + i * .06 });
+    sign(station, ['IDEATE', 'BUILD', 'ITERATE'][i], 0, .9, .61, 1.3);
+  });
+  // Challenge board, supply modules, and dashed build-lane markings.
+  box(parent, ink, [-3, 2.05, -2.5], [1.7, 1.65, .12]);
+  for (let i = 0; i < 3; i++) box(parent, i % 2 ? cyan : amber, [-3.4 + i * .4, 2.25 - i * .2, -2.4], [.28, .45, .03]);
+  for (let i = 0; i < 4; i++) box(parent, i % 2 ? coral : teal, [3.35, .85 + (i % 2) * .45, -2.4 + Math.floor(i / 2) * .75], [.7, .45, .65]);
+  for (let i = 0; i < 11; i++) box(parent, amber, [-3.8 + i * .7, .69, .25], [.32, .018, .07]);
+  skyWalk(parent, [point(0, .58, 4.5), point(0, .68, 3.5), point(-1.2, .7, .5)], .75, pearl, false, pink);
+  return { animations, exhibits: [] };
+}
+
+/** A deliberately sparse observatory with a tilted celestial atlas and knowledge clusters. */
+export function buildObservatory(parent: T.Group): WorldBuild {
+  const animations: WorldAnimation[] = [];
+  disc(parent, 5.1, .22, [0, .28, 0], pearl);
+  for (let i = 0; i < 3; i++) disc(parent, 2.1 - i * .18, .16, [-1.6, .48 + i * .15, -.5], stone);
+  disc(parent, 1.5, .7, [-1.6, 1.12, -.5], pearl);
+  const dome = mesh(parent, new T.SphereGeometry(1.48, 28, 14, 0, Math.PI * 2, 0, Math.PI / 2), glass, [-1.6, 1.46, -.5]);
+  for (let i = 0; i < 5; i++) {
+    const rib = mesh(parent, new T.TorusGeometry(1.5, .025, 5, 40, Math.PI), silver, [-1.6, 1.46, -.5]); rib.rotation.y = i * Math.PI / 5;
+  }
+  dome.rotation.y = .2;
+  const telescope = new T.Group(); telescope.position.set(-1.6, 1.7, -.5); telescope.rotation.z = -.8; telescope.rotation.y = -.2; parent.add(telescope);
+  column(telescope, 0, 0, 0, 2.5, .23, pearl); column(telescope, 0, 0, 2.2, .35, .34, ink);
+  disc(telescope, .26, .02, [0, 2.56, 0], cyan);
+  // Atlas is set behind the observatory, leaving a quiet front reading terrace.
+  const atlas = new T.Group(); atlas.position.set(1.2, 3.35, -1.1); atlas.rotation.set(.12, .2, -.18); parent.add(atlas);
+  for (const r of [1.55, 2.6]) mesh(atlas, new T.TorusGeometry(r, .024, 5, 80), r < 2 ? silver : brass);
+  const nodes = [point(-1.8, .8, 0), point(-.8, 1.65, .15), point(.1, .9, .1), point(1.6, 1.25, -.1), point(2, -.15, 0), point(.8, -.6, .15), point(.1, -1.65, 0), point(-1.25, -.9, -.15), point(-.4, -.15, .2)];
+  for (const [a, b] of [[0,1],[1,2],[2,3],[3,4],[4,5],[5,6],[6,7],[7,0],[2,8],[5,8],[7,8]]) stroke(atlas, [nodes[a], nodes[b]], '#938ab7', .8);
+  nodes.forEach((p, i) => { ball(atlas, i % 3 ? violet : cyan, p.toArray(), [.065, .065, .065]); ring(atlas, .13, p.toArray(), pearl, .018).rotation.x = 0; });
+  animations.push({ object: atlas, axis: 'y', speed: .018 });
+  for (let i = 0; i < 3; i++) {
+    const a = .1 + i * 1.05, x = Math.cos(a) * 3.6, z = Math.sin(a) * 3.2;
+    disc(parent, .52, .38, [x, .6, z], stone, 24);
+    for (let j = 0; j < 3; j++) { const book = box(parent, j % 2 ? lavender : pearl, [x, .86 + j * .08, z], [.58, .065, .4]); book.rotation.y = j * .15; }
+  }
+  skyWalk(parent, [point(-3.4, .43, 3.6), point(-1.8, .5, 2.65), point(.6, .5, 2.15), point(3.6, .43, 1.1)], .6, pearl, false, violet);
+  sign(parent, 'ASK · TEST · LEARN', -.6, .9, 2.7, 2);
+  planter(parent, -3.6, -2.3, .45); planter(parent, 3.8, -1.4, .4);
+  return { animations, exhibits: [] };
+}
+
+/** An exposed systems section: connected application, model, and data layers. */
+export function buildSystemsNexus(parent: T.Group): WorldBuild {
+  const animations: WorldAnimation[] = [];
+  roundedSlab(parent, 8.6, 7.5, .24, .3, ink);
+  const layers = [
+    { y: .65, width: 7.7, depth: 5.8, x: -.2, z: 0, label: 'DATA · SQL · POSTGRESQL' },
+    { y: 2.15, width: 6.5, depth: 4.6, x: -.6, z: -.4, label: 'MODELS · PYTHON · OLLAMA' },
+    { y: 3.65, width: 5.2, depth: 3.5, x: -1.1, z: -.85, label: 'APPLICATIONS · FLASK · DJANGO' },
+  ];
+  for (const [i, level] of layers.entries()) {
+    const { y, width, depth, x, z } = level;
+    roundedSlab(parent, width, depth, .12, y, i === 0 ? stone : glass, x, z);
+    const frame = new T.LineSegments(new T.EdgesGeometry(new T.BoxGeometry(width, .13, depth)), new T.LineBasicMaterial({ color: '#3d9a94' }));
+    frame.position.set(x, y + .07, z); parent.add(frame);
+    for (const dx of [-1, 1]) for (const dz of [-1, 1]) {
+      if (i < 2) column(parent, x + dx * (width / 2 - .3), z + dz * (depth / 2 - .3), y + .12, 1.4, .04, silver);
+    }
+    for (let j = 0; j < 3; j++) {
+      const px = x - width * .28 + j * width * .28;
+      if (i === 0) {
+        disc(parent, .42, .55, [px, y + .42, z], teal, 24);
+        for (let k = 0; k < 3; k++) ring(parent, .43, [px, y + .22 + k * .2, z], cyan, .014);
+      } else if (i === 1) {
+        box(parent, ink, [px, y + .38, z], [.85, .5, .8]);
+        for (let k = 0; k < 3; k++) box(parent, cyan, [px - .22 + k * .22, y + .65, z], [.1, .025, .4]);
+      } else {
+        box(parent, pearl, [px, y + .6, z], [.9, .85, .1]);
+        box(parent, teal, [px, y + .61, z + .06], [.73, .6, .02]);
+        for (let k = 0; k < 3; k++) box(parent, cyan, [px, y + .82 - k * .18, z + .08], [.5, .025, .015]);
+      }
+      if (j < 2) tube(parent, [point(px + .4, y + .2, z + .6), point(px + width * .14, y + .2, z + .9), point(px + width * .28 - .4, y + .2, z + .6)], cyan, .025);
+    }
+    sign(parent, level.label, x, y + .35, z + depth / 2 + .02, width * .85);
+  }
+  // Visible risers carry information between levels rather than arbitrary logo orbits.
+  for (const x of [2.7, 3.4]) {
+    tube(parent, [point(x, .8, 1.7), point(x + .25, 1.35, 1.7), point(x, 2.35, 1), point(x - .7, 3, .8), point(x - 1.2, 3.9, .3)], x < 3 ? cyan : amber, .045);
+  }
+  const toolBus = new T.Group(); toolBus.position.set(2.9, 2.6, -.6); parent.add(toolBus);
+  ring(toolBus, 1.1, [0, 0, 0], silver, .02).rotation.z = .35;
+  for (let i = 0; i < 3; i++) {
+    const a = i / 3 * Math.PI * 2;
+    box(toolBus, teal, [Math.cos(a) * 1.1, 0, Math.sin(a) * 1.1], [.32, .3, .32]);
+  }
+  animations.push({ object: toolBus, axis: 'y', speed: .08 });
+  skyWalk(parent, [point(0, .45, 4.4), point(0, .65, 3.2), point(-1.2, .8, 2.3)], .85, pearl, false, cyan);
+  return { animations, exhibits: [] };
+}
+
+/** Stylized geographic patches. Decorative global perspective, not a navigational map. */
+function earth(parent: T.Object3D, radius: number) {
+  const globe = new T.Group(); parent.add(globe);
+  mesh(globe, new T.SphereGeometry(radius, 36, 24), new T.MeshStandardMaterial({ color: '#75bbce', roughness: .4, metalness: .12 }));
+  const land = new T.MeshStandardMaterial({ color: '#a2bca0', roughness: .85 });
+  const continents = [
+    [[-165,65],[-130,72],[-105,55],[-65,48],[-80,20],[-100,12],[-118,30],[-145,48]],
+    [[-80,10],[-54,4],[-35,-7],[-50,-30],[-68,-55],[-76,-25]],
+    [[-16,35],[20,38],[48,12],[35,-30],[18,-36],[-2,-3]],
+    [[-10,36],[-6,58],[30,70],[70,56],[105,72],[155,52],[125,20],[100,5],[75,8],[50,35],[32,42]],
+    [[112,-12],[142,-10],[154,-28],[137,-40],[115,-31]],
+  ];
+  const onSphere = (lon: number, lat: number) => {
+    const a = lon * Math.PI / 180, b = lat * Math.PI / 180, r = radius + .055;
+    return point(Math.cos(b) * Math.sin(a) * r, Math.sin(b) * r, Math.cos(b) * Math.cos(a) * r);
+  };
+  for (const contour of continents) {
+    const points = contour.map(([lon, lat]) => new T.Vector2(lon, lat));
+    const triangles = T.ShapeUtils.triangulateShape(points, []);
+    // Subdivide in longitude/latitude so larger land polygons conform to the globe.
+    const positions: number[] = [];
+    for (const triangle of triangles) {
+      const [a, b, c] = triangle.map(i => points[i]); const divisions = 12;
+      const p = (u: number, v: number) => onSphere(a.x + (b.x - a.x) * u + (c.x - a.x) * v, a.y + (b.y - a.y) * u + (c.y - a.y) * v);
+      const face = (a: T.Vector3, b: T.Vector3, c: T.Vector3) => {
+        const outward = b.clone().sub(a).cross(c.clone().sub(a)).dot(a) > 0;
+        positions.push(...a.toArray(), ...(outward ? b : c).toArray(), ...(outward ? c : b).toArray());
+      };
+      for (let row = 0; row < divisions; row++) for (let col = 0; col < divisions - row; col++) {
+        const u = row / divisions, v = col / divisions, d = 1 / divisions;
+        face(p(u, v), p(u + d, v), p(u, v + d));
+        if (row + col < divisions - 1) face(p(u + d, v), p(u + d, v + d), p(u, v + d));
+      }
+    }
+    const geometry = new T.BufferGeometry(); geometry.setAttribute('position', new T.Float32BufferAttribute(positions, 3)); geometry.computeVertexNormals(); mesh(globe, geometry, land);
+  }
+  for (let i = -2; i <= 2; i++) {
+    const lat = i * Math.PI / 6;
+    ring(globe, Math.cos(lat) * (radius + .025), [0, Math.sin(lat) * (radius + .025), 0], new T.MeshBasicMaterial({ color: '#c3edf2', transparent: true, opacity: .25 }), .009);
+  }
+  return globe;
+}
+
+/** An open crescent terrace, with three unfinished routes toward future possibilities. */
+export function buildOpenHorizon(parent: T.Group): WorldBuild {
+  const animations: WorldAnimation[] = [];
+  disc(parent, 5.45, .2, [0, .28, 0], pearl);
+  // The low crescent leaves most of the sky visible; no gateway or central skyscraper.
+  for (let i = 0; i < 3; i++) {
+    skyWalk(parent, arcPoints(4.6 - i * .46, .48 + i * .2, -.05, Math.PI * 1.3), .42, i % 2 ? stone : pearl, false, amber);
+  }
+  const globe = earth(parent, 1.85); globe.position.set(-.6, 3.6, -.7); globe.rotation.z = .23;
+  animations.push({ object: globe, axis: 'y', speed: .035 });
+  const cradle = mesh(parent, new T.TorusGeometry(2.15, .055, 8, 72, Math.PI * 1.55), brass, [-.6, 3.6, -.7]); cradle.rotation.z = -.6;
+  column(parent, -.6, -.7, .45, .85, .1, brass);
+  const labels = ['HIGHER STUDIES', 'DEEPER RESEARCH', 'GLOBAL EXPLORATION'];
+  for (let i = 0; i < 3; i++) {
+    const x = 1.7 + i * 1.05, z = -2.9 + i * 1.6;
+    const points = [point(-.6, .65, 1), point(x - .8, 1.5 + i * .3, z + .8), point(x + .6, 3.5 + i * .55, z)];
+    tube(parent, points, i % 2 ? cyan : amber, .025);
+    ball(parent, pearl, [x + .6, 3.5 + i * .55, z], [.09, .09, .09]);
+    // Dashed continuations communicate aspiration, rather than achieved destinations.
+    for (let k = 1; k <= 4; k++) {
+      const a = points[2].clone().add(point(k * .19, k * .18, -.03 * k));
+      strut(parent, a, a.clone().add(point(.07, .07, -.01)), i % 2 ? cyan : amber, .016);
+    }
+    sign(parent, labels[i], x, .78, 2.1 + i * .46, 1.7);
+  }
+  skyWalk(parent, [point(-1.7, .45, 4.8), point(-2.7, .65, 3.1), point(-2.7, .72, .8)], .85, pearl, true, amber);
+  for (const x of [-3.7, -2.5]) planter(parent, x, -1.8, .45, .5);
+  return { animations, exhibits: [] };
 }
 

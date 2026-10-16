@@ -18,18 +18,25 @@ A cinematic floating-island portfolio built with Next.js, React, TypeScript, Thr
 - Illustrated fallback when WebGL is unavailable.
 - Static export: no database, API keys, or paid model services required to run the portfolio.
 
-## Approved world designs — implemented
+## World architecture
 
-The first four design phases are implemented as procedural, real-time Three.js environments:
+All eight worlds are implemented as procedural, real-time Three.js environments:
 
 - **Shared foundation:** pearl and stone architecture, irregular floating rock, layered cloud sprites, walkable cyan/pink sky bridges, and an airy daylight palette.
 - **Psychology — The Mind Garden:** a neural human silhouette, two flowing terrace paths, a reflection pool, suspended memory fragments, and emotion lights.
 - **AI — The Intelligence Nexus:** structured glass laboratory towers, a suspended polyhedral core, three supporting rings, a separate knowledge graph, and four ordered model stations.
-- **Projects — The Project Atelier:** one continuous gallery, one floating island, and five selectable exhibits. The former detached project islands have been removed.
+- **Projects — The Project Atelier:** one continuous gallery, one floating island, and five selectable exhibits.
+- **Culture — The Cultural Crossroads:** a woven performance pavilion, stepped amphitheatre, warm art folios, acoustic waves, and a suspended connection lantern.
+- **Hackathons — The Invention Yard:** an asymmetric braced gantry, a kinetic prototype, three working benches, supply modules, and a challenge board.
+- **Research — The Observatory:** an offset glass dome and telescope, a tilted celestial atlas, sparse knowledge clusters, and a quiet reading terrace.
+- **Technology — The Systems Nexus:** an exposed three-level system connecting data stores, model modules, application interfaces, and visible infrastructure risers.
+- **Future — The Open Horizon:** an open crescent terrace, a stylized Earth, and unfinished light routes toward higher studies, research, and global exploration.
 
-Scroll or select a chapter to fly to its world. Choose **Explore in 3D** to drag to orbit and pinch or scroll to zoom. Use the world buttons to travel between the three completed designs; press Escape or **Return to portfolio** to resume reading. Project exhibits open the same accessible case-study dialogs as the project list.
+Scroll or select a chapter to fly to its world. Choose **Explore in 3D** to drag to orbit and pinch or scroll to zoom. Use the world buttons to travel between all eight worlds; press Escape or **Return to portfolio** to resume reading. Project exhibits open the same accessible case-study dialogs as the project list.
 
-The other five worlds retain their earlier geometry pending their individual design phases. Concept illustrations are an art-direction reference: the implementation uses lightweight procedural geometry, not the same high-detail offline-rendered assets. Matching code-rendered stills provide a fallback for the three rebuilt worlds when WebGL is unavailable.
+Concept illustrations provide the art direction. The interactive implementation uses lightweight procedural geometry. Each world has a matching code-rendered fallback still when WebGL is unavailable. Important portfolio content remains in readable HTML panels.
+
+Opaque static architecture is batched by material within each world. Animated objects, transparent surfaces, and project selection remain independent. Geometry checks verify the actual batched scene, camera framing at three viewport shapes, complete route connectivity, and all five project selection targets. These checks also run in GitHub Actions.
 
 ## The worlds
 
@@ -73,6 +80,7 @@ Open `http://localhost:3000`.
 | --- | --- |
 | `npm run dev` | Start the Next.js development server |
 | `npm run typecheck` | Check TypeScript without emitting files |
+| `npm run verify:worlds` | Verify world geometry, batching, chapter framing, connections, and project selection |
 | `npm run build` | Generate the production website in `out/` |
 | `npm start` | Serve the generated `out/` directory locally |
 
@@ -87,7 +95,10 @@ Run `npm run build` before `npm start`. No environment variables are needed.
 | `app/globals.css` | Responsive styling, content panels, and motion preferences |
 | `components/Portfolio.tsx` | Sections, navigation, project dialogs, and readable content |
 | `components/SkyScene.tsx` | Procedural Three.js worlds and camera behavior |
-| `components/WorldArchitecture.ts` | Shared materials, walkable bridges, and the Mind Garden, Intelligence Nexus, and Project Atelier geometry |
+| `components/WorldArchitecture.ts` | Shared materials and eight distinct world builders |
+| `components/WorldCatalog.ts` | World positions, route graph, and chapter camera framing |
+| `components/SceneBatch.ts` | Static architecture batching with independent animation and project picking |
+| `scripts/verify-worlds.mjs` | Renderer-independent geometry and scene checks |
 | `data/portfolio.ts` | Selected projects, experience, skills, and archive |
 | `public/` | Illustrations and favicon |
 | `next.config.ts` | Static-export configuration |
@@ -128,7 +139,7 @@ The scene should also be reviewed on a WebGL-capable device when changing geomet
 
 ## Assets and content
 
-The original sky-world and world-identity illustrations were AI-generated for this portfolio. The procedural 3D scene and the three `*-world.webp` fallback stills are rendered from code. Profile content is curated from material supplied by Monasri; raw profile documents and internal hosting configuration are excluded from this repository.
+The original sky-world and world-identity illustrations were AI-generated for this portfolio. The procedural 3D scene and all eight `*-world.webp` fallback stills are rendered from code. Profile content is curated from material supplied by Monasri; raw profile documents and internal hosting configuration are excluded from this repository.
 
 ## Connect
 

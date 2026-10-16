@@ -42,7 +42,7 @@
 @media(max-width:1050px){.chapter-content{width:470px;padding:30px}.hero-content{max-width:560px;padding:32px}.hero h1{font-size:70px}.hero-actions{gap:20px}.world-caption{max-width:40%;font-size:10px}.travel-status{font-size:10px;min-width:150px}.travel-bar nav a{width:30px;height:30px}.header nav{gap:18px}.header nav a{font-size:14px}}
 @media(max-width:720px){.header{height:78px}.brand{font-size:11px}.brand-small{font-size:9px}.menu-button{font-size:12px;padding:10px}.chapter,.hero{padding:105px 5% 210px;min-height:125svh}.hero-content,.chapter-content{width:100%;padding:25px 22px;border-radius:8px;background:#f9fcfefa}.hero h1{font-size:clamp(47px,11.5vw,66px);letter-spacing:-3px}.hero h1 em{letter-spacing:-3px}.hero-content .eyebrow{font-size:10px;letter-spacing:1px}.hero-name{font-size:13px;max-width:none}.hero-description{font-size:16px;max-width:none}.hero-actions{gap:17px}.button{font-size:14px;gap:15px;padding:13px 16px}.hero-actions .underlink{font-size:14px}.chapter-content h2{font-size:45px;letter-spacing:-2px}.chapter-content h2 em{letter-spacing:-2px}.chapter-content .eyebrow{font-size:11px}.chapter-content p{font-size:16px}.chapter-content .lead{font-size:20px}.underlink{font-size:15px}.project-list strong{font-size:21px}.project-list small{font-size:10px}.project-list button{gap:12px}.project-summary{font-size:16px}.project-contribution{font-size:14px}.project-number{font-size:12px}.milestone-list li{font-size:17px}.milestone-list strong{font-size:14px}.milestone-list small{font-size:10px;min-width:70px}.world-caption{max-width:none;bottom:110px;left:5%;right:5%;font-size:10px;gap:10px;padding:10px 12px}.world-caption>span{font-size:11px;padding:7px}.hero-caption{bottom:113px;right:5%;font-size:10px;max-width:90%}.scroll-cue{bottom:167px;font-size:10px}.travel-bar{height:88px}.travel-status{font-size:10px}.travel-bar>button{font-size:12px}.travel-bar nav a{font-size:11px;width:29px;height:29px}.world-art{width:100%;top:78px;bottom:88px;opacity:.82}.facts{gap:25px}.facts strong{font-size:23px}.skill-list p{font-size:16px}.project-dialog .eyebrow{font-size:11px}.project-dialog p{font-size:16px}.future .world-caption{font-size:9px}}
 
-/* Phase 01–04: airy shared sky, individually constructed worlds, one project gallery. */
+/* A shared airy sky, eight individually constructed worlds, one project gallery. */
 :root{--ink:#153449;--paper:#faf7f0}
 .sky-backdrop{background:#b5d9e9 url('/sky-world.webp') center/cover no-repeat;transition:opacity 1s}
 .portfolio[data-ready=true] .sky-backdrop{background:radial-gradient(ellipse at 70% 18%,#eff8f7 0,transparent 43%),linear-gradient(180deg,#8fc3de 0%,#c0e2ef 50%,#edf4f2 100%)}
@@ -71,7 +71,7 @@
 .scene-controls{display:flex;align-items:center;gap:15px;flex-wrap:wrap;pointer-events:auto}
 .scene-explore{background:#faf8efed;border:1px solid #9ab4c2;padding:10px 15px;border-radius:4px;font-size:12px;box-shadow:0 3px 10px #23455610;transition:background .2s}
 .scene-explore:hover{background:white}.scene-instructions{font-size:12px;background:#fff9;padding:8px;border-radius:4px}
-.scene-destinations{display:flex;flex-wrap:wrap;gap:6px;pointer-events:auto}
+.scene-destinations{display:flex;flex-wrap:wrap;gap:6px;pointer-events:auto;max-width:740px}
 .scene-destinations button{background:#fbf8efed;border:1px solid #9bb4bf;padding:10px 15px;border-radius:30px;font-size:12px}
 .scene-destinations button.selected{color:white;background:#193e52;border-color:#193e52}
 .scene-fallback-note{max-width:300px;line-height:1.7;font-size:13px;background:#f9fbf3eb;padding:14px}
@@ -97,5 +97,6 @@
  .hero h1{font-size:clamp(47px,11.5vw,65px)}.chapter-content h2{font-size:44px}.hero .eyebrow{font-size:9px}.hero-description{font-size:16px}
  .world-caption,.scroll-cue{display:none}.travel-bar{height:88px}.scene-fallback-note{display:none}
  .inspecting .sky-canvas{top:78px;height:calc(100svh - 166px)}.inspecting .scene-tools{top:92px;left:5%}.inspecting .scene-heading{padding:10px 12px}.scene-instructions{font-size:10px;max-width:300px}.scene-destinations button{font-size:10px;padding:8px 10px}
- .scene-destinations{position:fixed;bottom:108px;left:5%;right:5%;justify-content:center}
+ .scene-destinations{position:fixed;bottom:108px;left:5%;right:5%;justify-content:flex-start;flex-wrap:nowrap;overflow-x:auto;padding:6px 2px 10px;scrollbar-width:thin;scrollbar-color:#547786 #f8f5eb;background:#eef5f0e8;border-radius:8px}
+ .scene-destinations button{flex-shrink:0}
 }
