@@ -18,13 +18,26 @@ A cinematic floating-island portfolio built with Next.js, React, TypeScript, Thr
 - Illustrated fallback when WebGL is unavailable.
 - Static export: no database, API keys, or paid model services required to run the portfolio.
 
+## Approved world designs — implemented
+
+The first four design phases are implemented as procedural, real-time Three.js environments:
+
+- **Shared foundation:** pearl and stone architecture, irregular floating rock, layered cloud sprites, walkable cyan/pink sky bridges, and an airy daylight palette.
+- **Psychology — The Mind Garden:** a neural human silhouette, two flowing terrace paths, a reflection pool, suspended memory fragments, and emotion lights.
+- **AI — The Intelligence Nexus:** structured glass laboratory towers, a suspended polyhedral core, three supporting rings, a separate knowledge graph, and four ordered model stations.
+- **Projects — The Project Atelier:** one continuous gallery, one floating island, and five selectable exhibits. The former detached project islands have been removed.
+
+Scroll or select a chapter to fly to its world. Choose **Explore in 3D** to drag to orbit and pinch or scroll to zoom. Use the world buttons to travel between the three completed designs; press Escape or **Return to portfolio** to resume reading. Project exhibits open the same accessible case-study dialogs as the project list.
+
+The other five worlds retain their earlier geometry pending their individual design phases. Concept illustrations are an art-direction reference: the implementation uses lightweight procedural geometry, not the same high-detail offline-rendered assets. Matching code-rendered stills provide a fallback for the three rebuilt worlds when WebGL is unavailable.
+
 ## The worlds
 
 | World | Visual identity | Portfolio focus |
 | --- | --- | --- |
 | Psychology | Neural forms, thought pathways, soft emotional light | Human behavior, cognition, and human-centered design |
 | AI | Intelligence core, structured towers, data pipelines | AI/ML applications and intelligent systems |
-| Projects | Five purpose-specific miniature environments | Selected work and individual contributions |
+| Projects | One shared Project Atelier with five purpose-specific exhibits | Selected work and individual contributions |
 | Culture | Warm artistic forms and global connections | Generative art, culture, and human connection |
 | Hackathons | Experimental structures and invention zones | Rapid building and collaborative challenges |
 | Research | Constellations and an observatory atmosphere | Evaluation, curiosity, and research communities |
@@ -74,6 +87,7 @@ Run `npm run build` before `npm start`. No environment variables are needed.
 | `app/globals.css` | Responsive styling, content panels, and motion preferences |
 | `components/Portfolio.tsx` | Sections, navigation, project dialogs, and readable content |
 | `components/SkyScene.tsx` | Procedural Three.js worlds and camera behavior |
+| `components/WorldArchitecture.ts` | Shared materials, walkable bridges, and the Mind Garden, Intelligence Nexus, and Project Atelier geometry |
 | `data/portfolio.ts` | Selected projects, experience, skills, and archive |
 | `public/` | Illustrations and favicon |
 | `next.config.ts` | Static-export configuration |
@@ -101,20 +115,20 @@ Import `Monasri29-hub/mind-atlas` into Vercel and select the `main` branch, with
 - Node.js: **24.x**
 - Install command: `npm ci`
 - Build command: `npm run build`
-- Output directory: `out`
+- Output directory: leave the Vercel Next.js preset default (do not override it to `out`)
 - Environment variables: none
 
-After linking the repository, Vercel can deploy updates pushed to `main` and create previews for pull requests. A production URL should be added here once the deployment is verified.
+After linking the repository, Vercel can deploy updates pushed to `main` and create previews for pull requests. The existing production portfolio is [mind-atlas-portfolio-2.vercel.app](https://mind-atlas-portfolio-2.vercel.app/).
 
 ## Accessibility and rendering
 
 The portfolio supports narrow screens, readable content overlays, native project dialogs, keyboard navigation, and reduced motion. The animated scene uses a single WebGL renderer. Browsers without WebGL receive themed artwork while the portfolio content remains available.
 
-The scene should also be reviewed on a WebGL-capable device when changing geometry or animation. The available browser used during development had WebGL disabled, so its visual checks covered the illustrated fallback and interface.
+The scene should also be reviewed on a WebGL-capable device when changing geometry or animation. The latest implementation was checked with TypeScript, a production build, geometry/selection invariants, and code-rendered stills. Interactive browser QA was unavailable in that execution environment; live WebGL appearance, orbit interactions, and device frame rates still need a device review.
 
 ## Assets and content
 
-Sky-world and world-identity illustrations were AI-generated for this portfolio. The procedural 3D scene is implemented in code. Profile content is curated from material supplied by Monasri; raw profile documents and internal hosting configuration are excluded from this repository.
+The original sky-world and world-identity illustrations were AI-generated for this portfolio. The procedural 3D scene and the three `*-world.webp` fallback stills are rendered from code. Profile content is curated from material supplied by Monasri; raw profile documents and internal hosting configuration are excluded from this repository.
 
 ## Connect
 

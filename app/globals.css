@@ -41,3 +41,61 @@
 .world-art{position:fixed;z-index:1;right:0;top:90px;bottom:80px;width:56%;background-image:url('/world-identities.webp');background-size:400% 200%;background-repeat:no-repeat;pointer-events:none;box-shadow:inset 20px 0 40px #b8dbeb55;transition:opacity .3s}
 @media(max-width:1050px){.chapter-content{width:470px;padding:30px}.hero-content{max-width:560px;padding:32px}.hero h1{font-size:70px}.hero-actions{gap:20px}.world-caption{max-width:40%;font-size:10px}.travel-status{font-size:10px;min-width:150px}.travel-bar nav a{width:30px;height:30px}.header nav{gap:18px}.header nav a{font-size:14px}}
 @media(max-width:720px){.header{height:78px}.brand{font-size:11px}.brand-small{font-size:9px}.menu-button{font-size:12px;padding:10px}.chapter,.hero{padding:105px 5% 210px;min-height:125svh}.hero-content,.chapter-content{width:100%;padding:25px 22px;border-radius:8px;background:#f9fcfefa}.hero h1{font-size:clamp(47px,11.5vw,66px);letter-spacing:-3px}.hero h1 em{letter-spacing:-3px}.hero-content .eyebrow{font-size:10px;letter-spacing:1px}.hero-name{font-size:13px;max-width:none}.hero-description{font-size:16px;max-width:none}.hero-actions{gap:17px}.button{font-size:14px;gap:15px;padding:13px 16px}.hero-actions .underlink{font-size:14px}.chapter-content h2{font-size:45px;letter-spacing:-2px}.chapter-content h2 em{letter-spacing:-2px}.chapter-content .eyebrow{font-size:11px}.chapter-content p{font-size:16px}.chapter-content .lead{font-size:20px}.underlink{font-size:15px}.project-list strong{font-size:21px}.project-list small{font-size:10px}.project-list button{gap:12px}.project-summary{font-size:16px}.project-contribution{font-size:14px}.project-number{font-size:12px}.milestone-list li{font-size:17px}.milestone-list strong{font-size:14px}.milestone-list small{font-size:10px;min-width:70px}.world-caption{max-width:none;bottom:110px;left:5%;right:5%;font-size:10px;gap:10px;padding:10px 12px}.world-caption>span{font-size:11px;padding:7px}.hero-caption{bottom:113px;right:5%;font-size:10px;max-width:90%}.scroll-cue{bottom:167px;font-size:10px}.travel-bar{height:88px}.travel-status{font-size:10px}.travel-bar>button{font-size:12px}.travel-bar nav a{font-size:11px;width:29px;height:29px}.world-art{width:100%;top:78px;bottom:88px;opacity:.82}.facts{gap:25px}.facts strong{font-size:23px}.skill-list p{font-size:16px}.project-dialog .eyebrow{font-size:11px}.project-dialog p{font-size:16px}.future .world-caption{font-size:9px}}
+
+/* Phase 01–04: airy shared sky, individually constructed worlds, one project gallery. */
+:root{--ink:#153449;--paper:#faf7f0}
+.sky-backdrop{background:#b5d9e9 url('/sky-world.webp') center/cover no-repeat;transition:opacity 1s}
+.portfolio[data-ready=true] .sky-backdrop{background:radial-gradient(ellipse at 70% 18%,#eff8f7 0,transparent 43%),linear-gradient(180deg,#8fc3de 0%,#c0e2ef 50%,#edf4f2 100%)}
+.portfolio[data-ready=true] .sky-backdrop:after{content:'';position:absolute;inset:35% 0 0;background:radial-gradient(ellipse at 75% 80%,#fff9 0,transparent 50%),radial-gradient(ellipse at 25% 70%,#ffffffa6 0,transparent 45%)}
+.sky-canvas{left:43%;top:90px;width:57%;height:calc(100svh - 170px);inset-inline-end:0;cursor:default;touch-action:pan-y}
+.world-still{position:fixed;left:43%;top:90px;width:57%;height:calc(100svh - 170px);object-fit:contain;z-index:1;pointer-events:none}
+.reading-shade{background:linear-gradient(90deg,#edf2ef55 0%,transparent 48%)}
+.header{background:#fcfaf5ed;border-bottom-color:#aab7bd70;height:90px}
+.brand{color:#17384b}.header nav a{font-size:14px}.menu-button{border-color:#a7b5bb;background:#fffdf8;border-radius:5px}
+.hero-content,.chapter-content{background:#fcfaf5f5;border:1px solid #fffdf9;border-top:2px solid var(--world-accent);border-radius:4px;box-shadow:0 16px 45px #2c4e6414;backdrop-filter:blur(12px);padding:32px}
+.chapter{padding-left:4.5%;padding-right:4.5%}.chapter-content{width:min(39vw,520px)}
+.hero-content{max-width:min(41vw,600px)}
+.hero h1{font-family:Georgia,serif;font-size:clamp(55px,5vw,80px);letter-spacing:-3px}
+.hero h1 em{letter-spacing:-3px;color:#337a88}
+.hero-name{font-size:14px}.hero-description{font-size:16px}
+.chapter-content h2{font-family:Georgia,serif;font-size:clamp(42px,4vw,62px);letter-spacing:-2px}
+.chapter-content h2 em{letter-spacing:-2px}.chapter-content .lead{font-size:20px}
+.chapter-content p{font-size:16px;line-height:1.75}.chapter-content .eyebrow{font-size:11px}
+.hero-coordinate,.hero-caption{display:none}.scroll-cue{left:4.5%;bottom:108px;font-size:10px}
+.world-caption{right:3%;bottom:105px;font-size:10px;background:#fbfaf1e8;padding:8px 12px;letter-spacing:1px;box-shadow:none;border-color:#b8c9ce88}
+.world-caption>span{font-size:10px;padding:5px 7px}.projects-chapter .chapter-content{width:min(40vw,550px)}
+.scene-tools{position:fixed;z-index:6;top:118px;left:48%;right:4%;pointer-events:none;display:flex;flex-direction:column;align-items:flex-start;gap:18px}
+.scene-heading{max-width:100%;text-shadow:0 1px 10px #ffffffc9}.scene-kicker{font-size:9px;letter-spacing:2px;font-weight:600;color:#41667c}
+.scene-heading h2{font-family:Georgia,serif;font-size:clamp(25px,2.5vw,38px);font-weight:400;letter-spacing:-1px;margin:8px 0}
+.scene-heading p{font-size:12px;letter-spacing:.4px;color:#3f6174;margin:0}
+.scene-controls{display:flex;align-items:center;gap:15px;flex-wrap:wrap;pointer-events:auto}
+.scene-explore{background:#faf8efed;border:1px solid #9ab4c2;padding:10px 15px;border-radius:4px;font-size:12px;box-shadow:0 3px 10px #23455610;transition:background .2s}
+.scene-explore:hover{background:white}.scene-instructions{font-size:12px;background:#fff9;padding:8px;border-radius:4px}
+.scene-destinations{display:flex;flex-wrap:wrap;gap:6px;pointer-events:auto}
+.scene-destinations button{background:#fbf8efed;border:1px solid #9bb4bf;padding:10px 15px;border-radius:30px;font-size:12px}
+.scene-destinations button.selected{color:white;background:#193e52;border-color:#193e52}
+.scene-fallback-note{max-width:300px;line-height:1.7;font-size:13px;background:#f9fbf3eb;padding:14px}
+.world-traits{display:flex;gap:7px;flex-wrap:wrap;margin:20px 0}.world-traits span{font-size:11px;color:var(--world-accent);background:var(--world-soft);padding:7px 9px;border-radius:3px}
+.gallery-note{display:flex;align-items:center;gap:15px;background:#f0ede5;padding:16px;margin:25px 0 5px;border:1px solid #dedbd0;border-radius:4px;font-size:11px;letter-spacing:1px}
+.gallery-note>span:first-child{font-size:30px;color:#75678a}.gallery-note small{display:block;color:#586570;font-size:12px;line-height:1.6;letter-spacing:0;margin-top:6px}
+.project-list button{padding:20px 0}.project-list strong{font-size:21px}.project-list small{font-size:10px}.project-summary{font-size:15px}.project-contribution{font-size:13px}
+.travel-bar{background:#fcfaf6ed;border-top:1px solid #b2bfc6;height:80px}
+.project-dialog{background:#fbf9f2;border-color:#c6c9c6}.project-dialog h2{font-family:Georgia,serif}.close-dialog{background:#fbf9f2}.tags span{background:#e7eef0}
+.inspecting .sky-canvas{left:0;width:100%;cursor:grab;touch-action:none}
+.inspecting .sky-canvas:active{cursor:grabbing}.inspecting .chapter>*{visibility:hidden;pointer-events:none}.inspecting .reading-shade{display:none}
+.inspecting .scene-tools{left:4.5%;right:4.5%;top:115px;gap:12px}
+.inspecting .scene-heading{background:#faf8f1e8;padding:12px 16px;border-radius:4px}
+.inspecting .world-art{width:100%}
+@media(min-width:1600px){.chapter-content p,.hero-description{font-size:18px}.chapter-content{width:520px}.scene-tools{left:46%}}
+@media(max-width:1000px) and (min-width:721px){.chapter{padding-left:3%}.hero-content,.chapter-content,.projects-chapter .chapter-content{width:43vw;max-width:43vw;padding:24px}.hero h1{font-size:57px}.chapter-content h2{font-size:44px}.hero-actions{gap:15px}.hero-actions .button{font-size:12px;padding:12px}.sky-canvas{left:45%;width:55%}.scene-tools{left:49%;right:2%}.scene-heading h2{font-size:25px}.header nav{gap:14px}.header nav a{font-size:12px}}
+@media(max-width:720px){
+ .header{height:78px}.sky-canvas{top:78px;left:0;width:100%;height:43svh;touch-action:pan-y}
+ .world-still{top:78px;left:0;width:100%;height:43svh}
+ .scene-tools{top:94px;left:5%;right:5%;gap:10px}.scene-kicker{font-size:8px}.scene-heading h2{font-size:25px;margin:5px 0}.scene-heading p{font-size:10px}.scene-explore{padding:8px 12px;font-size:11px}
+ .chapter,.hero{padding:calc(43svh + 90px) 5% 145px;min-height:120svh;align-items:flex-start}
+ .hero-content,.chapter-content,.projects-chapter .chapter-content{width:100%;max-width:100%;padding:26px 22px;background:#fcfaf5fa}
+ .hero h1{font-size:clamp(47px,11.5vw,65px)}.chapter-content h2{font-size:44px}.hero .eyebrow{font-size:9px}.hero-description{font-size:16px}
+ .world-caption,.scroll-cue{display:none}.travel-bar{height:88px}.scene-fallback-note{display:none}
+ .inspecting .sky-canvas{top:78px;height:calc(100svh - 166px)}.inspecting .scene-tools{top:92px;left:5%}.inspecting .scene-heading{padding:10px 12px}.scene-instructions{font-size:10px;max-width:300px}.scene-destinations button{font-size:10px;padding:8px 10px}
+ .scene-destinations{position:fixed;bottom:108px;left:5%;right:5%;justify-content:center}
+}
