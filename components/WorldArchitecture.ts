@@ -20,6 +20,42 @@ const cube = new T.BoxGeometry(1, 1, 1);
 const orb = new T.SphereGeometry(1, 12, 9);
 const point = (x: number, y: number, z: number) => new T.Vector3(x, y, z);
 
+/** Complete the terraces with edge detailing, structural supports, and energy seams. */
+export function finishWorld(parent: T.Group, id: string, radius: number) {
+  const colors:Record<string,string>={psychology:'#e494d5',ai:'#66dff7',projects:'#b5a3ed',culture:'#e8b579',hackathons:'#f2a278',research:'#b6a4e9',technology:'#7dd8c2',future:'#f2d5a0'};
+  const light=new T.MeshBasicMaterial({color:colors[id],toneMapped:false});
+  const halo=new T.MeshBasicMaterial({color:colors[id],transparent:true,opacity:.12,depthWrite:false,blending:T.AdditiveBlending,toneMapped:false});
+  const squash=id==='projects'?.72:id==='psychology'?.8:1;
+  const r=radius-.15,deckY=id==='hackathons'?.68:id==='technology'?.56:id==='projects'?.49:.43;
+  let edge:T.Vector3[];
+  if(id==='technology'||id==='hackathons'){
+    const w=id==='technology'?4.2:4.45,d=id==='technology'?3.65:3.45;
+    edge=[point(-w,deckY,-d),point(w,deckY,-d),point(w,deckY,d),point(-w,deckY,d)];
+    // Straight industrial edges retain the modular footprint.
+    for(let i=0;i<4;i++)strut(parent,edge[i],edge[(i+1)%4],light,.025);
+  }else{
+    const sides=id==='ai'?6:64;
+    edge=Array.from({length:sides},(_,i)=>{const a=i/sides*Math.PI*2;return point(Math.sin(a)*r,deckY,Math.cos(a)*r*squash)});
+    if(id==='ai')for(let i=0;i<6;i++)strut(parent,edge[i],edge[(i+1)%6],light,.028);
+    else tube(parent,edge,light,.025,true);
+  }
+  // Structural fins and light seams descend through the floating rock.
+  for(let i=0;i<6;i++){
+    const a=i/6*Math.PI*2+.3,dx=Math.cos(a),dz=Math.sin(a)*squash;
+    strut(parent,point(dx*radius*.85,-.08,dz*radius*.85),point(dx*radius*.54,-radius*.4,dz*radius*.54),silver,.04);
+    if(i%2===0){
+      const vein=[point(dx*radius*.96,-.2,dz*radius*.96),point(dx*radius*.75,-radius*.36,dz*radius*.75),point(dx*radius*.42,-radius*.72,dz*radius*.42)];
+      tube(parent,vein,light,.022);tube(parent,vein,halo,.085);
+    }
+  }
+  // Low viewing rails on the front side, with a generous central arrival opening.
+  if(!['ai','technology','hackathons'].includes(id))for(const start of [.09*Math.PI,.66*Math.PI]){
+    const pts=Array.from({length:17},(_,i)=>{const a=start+i/16*Math.PI*.24;return point(Math.cos(a)*r*.96,deckY+.42,Math.sin(a)*r*squash*.96)});
+    tube(parent,pts,silver,.018);
+    for(let i=0;i<pts.length;i+=4)column(parent,pts[i].x,pts[i].z,deckY,.42,.018,silver);
+  }
+}
+
 export function buildFloatingFoundation(parent: T.Group, radius: number, squash: number, seed = 4) {
   const rockMaterial = new T.MeshStandardMaterial({ color: '#737d7f', roughness: .98, flatShading: true });
   const geometry = new T.CylinderGeometry(radius, radius * .16, radius * 1.15, 19, 4);

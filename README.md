@@ -34,9 +34,15 @@ All eight worlds are implemented as procedural, real-time Three.js environments:
 
 Scroll or select a chapter to fly to its world. Choose **Explore in 3D** to drag to orbit and pinch or scroll to zoom. Use the world buttons to travel between all eight worlds; press Escape or **Return to portfolio** to resume reading. Project exhibits open the same accessible case-study dialogs as the project list.
 
-Concept illustrations provide the art direction. The interactive implementation uses lightweight procedural geometry. Each world has a matching code-rendered fallback still when WebGL is unavailable. Important portfolio content remains in readable HTML panels.
+Concept illustrations provide the art direction. The interactive implementation uses lightweight procedural geometry. Each world has a matching transparent code-rendered fallback still. An overview still appears during loading and when WebGL is unavailable. A GPU error boundary keeps failures isolated from the readable portfolio. Important portfolio content remains in readable HTML panels.
 
-Opaque static architecture is batched by material within each world. Animated objects, transparent surfaces, and project selection remain independent. Geometry checks verify the actual batched scene, camera framing at three viewport shapes, complete route connectivity, and all five project selection targets. These checks also run in GitHub Actions.
+Opaque static architecture is batched by material within each world. Animated objects, transparent surfaces, and project selection remain independent. Geometry checks verify the actual batched scene, chapter camera framing at three viewport shapes, overview framing and non-overlapping markers at five scene sizes, complete route connectivity, and all five project selection targets. These checks also run in GitHub Actions.
+
+## Layout and atmosphere repair
+
+The sky background now remains visible after the renderer starts. A single responsive stylesheet replaces the accumulated layout overrides. Compact numbered beacons reveal world names on hover or keyboard focus; their positions avoid each other and the scene toolbar. The readable panels occupy less horizontal space, leaving a larger continuous 3D stage.
+
+Camera framing is calculated from the constructed geometry rather than a fixed distant viewpoint. The islands have finished edge lighting, supporting fins, cliff energy seams, and viewing rails. Other islands remain present during chapter transitions. Lighting and sky reflections provide clearer separation between architecture, rock, and atmosphere.
 
 ## The worlds
 
@@ -96,7 +102,9 @@ Run `npm run build` before `npm start`. No environment variables are needed.
 | `components/Portfolio.tsx` | Sections, navigation, project dialogs, and readable content |
 | `components/SkyScene.tsx` | Procedural Three.js worlds and camera behavior |
 | `components/WorldArchitecture.ts` | Shared materials and eight distinct world builders |
-| `components/WorldCatalog.ts` | World positions, route graph, and chapter camera framing |
+| `components/WorldCatalog.ts` | World positions, route graph, and collision-aware numbered markers |
+| `components/SceneFraming.ts` | Camera framing from the real geometry, including instanced foliage |
+| `components/SceneBoundary.tsx` | Isolates GPU initialization failures from readable content |
 | `components/SceneBatch.ts` | Static architecture batching with independent animation and project picking |
 | `scripts/verify-worlds.mjs` | Renderer-independent geometry and scene checks |
 | `data/portfolio.ts` | Selected projects, experience, skills, and archive |
@@ -139,7 +147,7 @@ The scene should also be reviewed on a WebGL-capable device when changing geomet
 
 ## Assets and content
 
-The original sky-world and world-identity illustrations were AI-generated for this portfolio. The procedural 3D scene and all eight `*-world.webp` fallback stills are rendered from code. Profile content is curated from material supplied by Monasri; raw profile documents and internal hosting configuration are excluded from this repository.
+The original sky-world and world-identity illustrations were AI-generated for this portfolio. The procedural 3D scene, eight transparent world stills, and the overview still are rendered from code. `public/sky-atmosphere.webp` was generated with the built-in image-generation tool as a continuous cinematic daylight cloud sky, with blue open space, a low horizon, warm upper-left sunlight, and no islands, buildings, typography, or interface elements. Profile content is curated from material supplied by Monasri; raw profile documents and internal hosting configuration are excluded from this repository.
 
 ## Connect
 
