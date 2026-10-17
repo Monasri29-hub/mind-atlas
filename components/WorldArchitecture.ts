@@ -56,35 +56,7 @@ export function finishWorld(parent: T.Group, id: string, radius: number) {
   }
 }
 
-export function buildFloatingFoundation(parent: T.Group, radius: number, squash: number, seed = 4) {
-  const rockMaterial = new T.MeshStandardMaterial({ color: '#737d7f', roughness: .98, flatShading: true });
-  const geometry = new T.CylinderGeometry(radius, radius * .16, radius * 1.15, 19, 4);
-  const pos = geometry.attributes.position;
-  for (let i = 0; i < pos.count; i++) {
-    const x = pos.getX(i), z = pos.getZ(i), a = Math.atan2(z, x), y = pos.getY(i);
-    const level = (y + radius * .575) / (radius * 1.15);
-    const jitter = 1 + Math.sin(a * 5 + seed + level * 3) * .11 + Math.cos(a * 9 - seed) * .06;
-    const vertical = y + Math.sin(a * 6 + seed) * radius * .065 * (1 - level);
-    pos.setXYZ(i, x * jitter, vertical, z * jitter * squash);
-  }
-  geometry.computeVertexNormals();
-  mesh(parent, geometry, rockMaterial, [0, -radius * .57, 0]);
-  // Irregular embedded boulders break up the continuous cone silhouette.
-  const boulderGeometry = new T.IcosahedronGeometry(1, 1);
-  for (let i = 0; i < 27; i++) {
-    const a = i * 2.399 + seed, level = .2 + (i % 4) * .16;
-    const r = radius * (1 - level * .65), size = radius * (.08 + (i % 3) * .025);
-    mesh(parent, boulderGeometry, rockMaterial, [Math.cos(a) * r, -radius * level, Math.sin(a) * r * squash], [size, size * 1.4, size * .85]);
-  }
-  for (let i = 0; i < 15; i++) {
-    const a = i / 15 * Math.PI * 2, length = radius * (.16 + (Math.sin(i * 4.7) + 1) * .12);
-    mesh(parent, new T.ConeGeometry(radius * .085, length, 5), rockMaterial, [Math.cos(a) * radius * .78, -length * .6, Math.sin(a) * radius * .78 * squash], [1, -1, 1]);
-    if (i % 2 === 0) {
-      const vine = [point(Math.cos(a) * radius * .93, -.15, Math.sin(a) * radius * .93 * squash), point(Math.cos(a) * radius * .89, -.65, Math.sin(a) * radius * .89 * squash), point(Math.cos(a) * radius * .86, -1.35, Math.sin(a) * radius * .86 * squash)];
-      tube(parent, vine, leaf, .07);
-    }
-  }
-}
+export {buildFloatingFoundation} from './FloatingFoundation.ts';
 
 function mesh(parent: T.Object3D, geometry: T.BufferGeometry, material: T.Material, p = [0, 0, 0], s = [1, 1, 1]) {
   const object = new T.Mesh(geometry, material);

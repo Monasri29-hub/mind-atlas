@@ -3,24 +3,24 @@ import {useEffect,useRef} from 'react';
 import * as T from 'three';
 import {gsap} from 'gsap';
 import {OrbitControls} from 'three/examples/jsm/controls/OrbitControls.js';
-import {buildMindGarden,buildIntelligenceNexus,buildProjectAtelier,buildCulturalCrossroads,buildInventionYard,buildObservatory,buildSystemsNexus,buildOpenHorizon,buildFloatingFoundation,finishWorld,skyWalk,type WorldAnimation} from './WorldArchitecture';
-import {destinations,connections,SCENE_FOV,placeMarkers} from './WorldCatalog';
+import {buildMindGarden,buildIntelligenceNexus,buildProjectAtelier,buildCulturalCrossroads,buildInventionYard,buildObservatory,buildSystemsNexus,buildOpenHorizon,buildFloatingFoundation,finishWorld,type WorldAnimation} from './WorldArchitecture';
+import {destinations,SCENE_FOV,placeMarkers} from './WorldCatalog';
+import {createCloudTexture,buildSkyEnvironment} from './SkyEnvironment';
+import {buildSkyRoutes} from './SkyRoutes';
 import {batchWorld} from './SceneBatch';
 import {frameObjects} from './SceneFraming';
 import {captureView,syncOrbitView} from './CameraNavigation';
 type Props={reduced:boolean;active:string;inspect:boolean;onReady:()=>void;onFail:()=>void;onProject:(id:string)=>void;onWorld:(id:string)=>void};
-const rnd=(i:number)=>{const n=Math.sin(i*127.1+311.7)*43758.5453;return n-Math.floor(n)};
 export default function SkyScene(props:Props){
  const canvas=useRef<HTMLCanvasElement>(null),labels=useRef<HTMLDivElement>(null),current=useRef(props);current.current=props;
  useEffect(()=>{if(!canvas.current)return;let renderer:T.WebGLRenderer;try{renderer=new T.WebGLRenderer({canvas:canvas.current,alpha:true,antialias:true,powerPreference:'high-performance'});}catch{current.current.onFail();return;}
  let alive=true,reportedReady=false;let mobile=innerWidth<=720;const coarse=matchMedia('(pointer: coarse)');const limited=()=>mobile||coarse.matches;const viewport=()=>canvas.current!.getBoundingClientRect();let rect=viewport();renderer.setPixelRatio(Math.min(devicePixelRatio,limited()?1.25:1.65));renderer.setSize(rect.width,rect.height,false);renderer.outputColorSpace=T.SRGBColorSpace;renderer.toneMapping=T.ACESFilmicToneMapping;renderer.toneMappingExposure=.95;
- const scene=new T.Scene();scene.fog=new T.Fog('#acd5e7',100,260);const camera=new T.PerspectiveCamera(SCENE_FOV,rect.width/rect.height,.2,400);const sunlight=new T.DirectionalLight('#fff0dc',2.6);sunlight.position.set(-30,60,30);scene.add(sunlight,new T.HemisphereLight('#edf6ff','#536d80',1.65));const rim=new T.DirectionalLight('#a5ddf4',.85);rim.position.set(30,12,-30);scene.add(rim);
- const skyReflection=new T.TextureLoader().load('/sky-atmosphere.webp',texture=>{if(!alive){texture.dispose();return}texture.mapping=T.EquirectangularReflectionMapping;texture.colorSpace=T.SRGBColorSpace;scene.environment=texture;scene.environmentIntensity=.35;dirty=true});
- const white=new T.MeshStandardMaterial({color:'#ede9df',metalness:.15,roughness:.55});
- const pink=new T.MeshBasicMaterial({color:'#f188cb',toneMapped:false}),cyan=new T.MeshBasicMaterial({color:'#77e8ff',toneMapped:false});
- const sphere=new T.IcosahedronGeometry(1,1);
- const groups:T.Group[]=[],clickables:T.Object3D[]=[],architectureAnimations:WorldAnimation[]=[],routes:{curve:T.CatmullRomCurve3;dot:T.Mesh;offset:number}[]=[];
- function mesh(g:T.BufferGeometry,m:T.Material,parent:T.Object3D,x=0,y=0,z=0,sx=1,sy=1,sz=1){const o=new T.Mesh(g,m);o.position.set(x,y,z);o.scale.set(sx,sy,sz);parent.add(o);return o;}
+ const scene=new T.Scene();scene.fog=new T.Fog('#a7cee3',130,330);const camera=new T.PerspectiveCamera(SCENE_FOV,rect.width/rect.height,.2,400);
+ const sunlight=new T.DirectionalLight('#fff0d9',3.1);sunlight.position.set(-35,65,35);sunlight.castShadow=true;sunlight.shadow.mapSize.set(2048,2048);sunlight.shadow.bias=-.0002;sunlight.shadow.normalBias=.035;sunlight.shadow.camera.near=.5;sunlight.shadow.camera.far=180;
+ scene.add(sunlight,sunlight.target,new T.HemisphereLight('#e5f3ff','#5a7381',1.25));const rim=new T.DirectionalLight('#b8def2',.65);rim.position.set(35,18,-35);scene.add(rim);
+ renderer.shadowMap.enabled=!limited();renderer.shadowMap.type=T.PCFShadowMap;renderer.shadowMap.autoUpdate=false;
+ const skyReflection=new T.TextureLoader().load('/sky-atmosphere.webp',texture=>{if(!alive){texture.dispose();return}texture.mapping=T.EquirectangularReflectionMapping;texture.colorSpace=T.SRGBColorSpace;scene.environment=texture;scene.environmentIntensity=.3;dirty=true});
+ const groups:T.Group[]=[],clickables:T.Object3D[]=[],architectureAnimations:WorldAnimation[]=[];
  const builders:Record<string,(parent:T.Group)=>{animations:WorldAnimation[];exhibits:T.Object3D[]}>={
   psychology:buildMindGarden,ai:buildIntelligenceNexus,projects:buildProjectAtelier,
   culture:buildCulturalCrossroads,hackathons:buildInventionYard,research:buildObservatory,
@@ -31,34 +31,24 @@ export default function SkyScene(props:Props){
   buildFloatingFoundation(g,d.r,d.squash,i*110+4);
   const built=builders[d.id](g);finishWorld(g,d.id,d.r);batchWorld(g,built);architectureAnimations.push(...built.animations);clickables.push(...built.exhibits);
  });
- function connect(aIndex:number,bIndex:number,i:number){
- const a=destinations[aIndex],b=destinations[bIndex];
- const delta=new T.Vector3(b.p[0]-a.p[0],0,b.p[2]-a.p[2]).normalize();
- const av=new T.Vector3(a.p[0],a.p[1]+.43,a.p[2]).addScaledVector(delta,a.r*.85);
- const bv=new T.Vector3(b.p[0],b.p[1]+.43,b.p[2]).addScaledVector(delta,-b.r*.85);
- const mid=av.clone().lerp(bv,.5);mid.y+=1.2;
- const curve=i<6?skyWalk(scene,[av,mid,bv],.65,white,i<3,i%2?pink:cyan):new T.CatmullRomCurve3([av,mid,bv]);
- if(i>=6)mesh(new T.TubeGeometry(curve,40,.025,5,false),i%2?pink:cyan,scene);
- const dot=mesh(sphere,cyan,scene,0,0,0,.07,.07,.07);routes.push({curve,dot,offset:i*.13});
+ const transit=buildSkyRoutes(scene),atmosphere=buildSkyEnvironment(scene,createCloudTexture(),limited());
+ function updateLighting(){
+  const selected=current.current.active==='home'?groups:groups.filter(g=>g.userData.world===current.current.active);
+  const center=new T.Box3().setFromObject(selected[0],true);
+  selected.slice(1).forEach(g=>center.union(new T.Box3().setFromObject(g,true)));
+  const focus=center.getCenter(new T.Vector3()),extent=current.current.active==='home'?65:(destinations.find(d=>d.id===current.current.active)?.r??6)*1.7;
+  sunlight.target.position.copy(focus);sunlight.position.copy(focus).add(new T.Vector3(-35,65,35));sunlight.target.updateMatrixWorld();
+  Object.assign(sunlight.shadow.camera,{left:-extent,right:extent,top:extent,bottom:-extent});sunlight.shadow.camera.updateProjectionMatrix();
+  renderer.shadowMap.enabled=!limited();renderer.shadowMap.needsUpdate=true;
  }
- connections.forEach(([a,b],i)=>connect(a,b,i));
- // A small number of billowed cloud banks gives depth without washing out the worlds.
- const cloudCanvas=document.createElement('canvas');cloudCanvas.width=256;cloudCanvas.height=160;
- const ctx=cloudCanvas.getContext('2d')!;
- for(const [x,y,r]of [[55,95,48],[91,70,53],[140,64,58],[187,85,48],[218,101,34]]){
-  const gradient=ctx.createRadialGradient(x,y,r*.15,x,y,r);
-  gradient.addColorStop(0,'rgba(255,254,246,.72)');gradient.addColorStop(.55,'rgba(236,246,250,.5)');gradient.addColorStop(1,'rgba(215,235,246,0)');
-  ctx.fillStyle=gradient;ctx.fillRect(0,0,256,160);
- }
- const texture=new T.CanvasTexture(cloudCanvas);texture.colorSpace=T.SRGBColorSpace;
- const clouds:T.Sprite[]=[];
- for(let i=0;i<(mobile?14:28);i++){
-  const sprite=new T.Sprite(new T.SpriteMaterial({map:texture,color:'#f4faff',transparent:true,opacity:.55,depthWrite:false}));
-  sprite.position.set((rnd(i+5000)-.5)*140,-12-rnd(i+5300)*12,(rnd(i+6000)-.5)*130-12);
-  const size=12+rnd(i+5500)*13;sprite.scale.set(size*1.9,size,1);scene.add(sprite);clouds.push(sprite);
- }
+ groups.forEach(g=>g.traverse(o=>{
+  if(!(o instanceof T.Mesh))return;o.receiveShadow=true;
+  const material=Array.isArray(o.material)?o.material[0]:o.material;
+  o.castShadow=!(o instanceof T.InstancedMesh)&&!material.transparent&&!(material instanceof T.MeshBasicMaterial)&&!('vertexColors'in material&&material.vertexColors);
+ }));
+ updateLighting();
  // Chapter changes drive a short camera flight; each chapter then holds its world.
- const controls=new OrbitControls(camera,canvas.current);controls.enableDamping=true;controls.dampingFactor=.08;controls.enablePan=false;controls.minDistance=8;controls.maxDistance=220;controls.maxPolarAngle=Math.PI*.49;controls.enabled=false;
+ const controls=new OrbitControls(camera,canvas.current);controls.enableDamping=true;controls.dampingFactor=.08;controls.enablePan=false;controls.minDistance=8;controls.maxDistance=360;controls.maxPolarAngle=Math.PI*.49;controls.enabled=false;
  const frameCache=new Map<string,ReturnType<typeof frameObjects>>();
  function waypoint(){const id=current.current.active,key=id+':'+(rect.width/rect.height).toFixed(3);let view=frameCache.get(key);if(!view){view=frameObjects(id==='home'?groups:groups.filter(g=>g.userData.world===id),id,rect.width/rect.height);frameCache.set(key,view)}return view}
  const overview=waypoint();const target=new T.Vector3(overview.lx,overview.ly,overview.lz);syncOrbitView(camera,controls,overview);
@@ -97,7 +87,7 @@ export default function SkyScene(props:Props){
   const world=current.current.active,inspect=current.current.inspect;
   if(world!==lastWorld||inspect!==lastInspect){
    rect=viewport();camera.aspect=rect.width/rect.height;camera.updateProjectionMatrix();renderer.setSize(rect.width,rect.height,false);
-   measureToolbar();scrollTween?.kill();const next=waypoint();
+   measureToolbar();updateLighting();scrollTween?.kill();const next=waypoint();
    const origin=captureView(camera,lastInspect?controls.target:target);if(!inspect&&!reduced){origin.x-=pointerX;origin.y-=pointerY}Object.assign(flight,origin);
    if(reduced||!reportedReady){Object.assign(flight,next);syncOrbitView(camera,controls,next)}
    else{syncOrbitView(camera,controls,origin);scrollTween=gsap.to(flight,{...next,duration:1.1,ease:'power2.inOut',onUpdate:wake})}
@@ -108,8 +98,11 @@ export default function SkyScene(props:Props){
   if(!reduced)elapsed+=dt;
   if(inspect){if(scrollTween?.isActive()){camera.position.set(flight.x,flight.y,flight.z);controls.target.set(flight.lx,flight.ly,flight.lz)}controls.update();}
   else{camera.position.set(flight.x+(reduced?0:pointerX),flight.y+(reduced?0:pointerY),flight.z);target.set(flight.lx,flight.ly,flight.lz);camera.lookAt(target);}
+  // Follow the actual camera distance so haze never jumps at a chapter boundary.
+  if(scene.fog instanceof T.Fog){scene.fog.near=Math.max(45,camera.position.distanceTo(inspect?controls.target:target)*.76);scene.fog.far=scene.fog.near+190}
   groups.forEach((g,i)=>{g.position.y=g.userData.baseY+(reduced?0:Math.sin(elapsed*.35+i)*.07)});
-  if(!reduced){architectureAnimations.forEach(a=>a.object.rotation[a.axis]+=dt*a.speed);routes.forEach(r=>r.dot.position.copy(r.curve.getPoint((elapsed*.04+r.offset)%1)));}
+  if(!reduced)architectureAnimations.forEach(a=>a.object.rotation[a.axis]+=dt*a.speed);
+  atmosphere.update(elapsed,reduced);transit.update(elapsed,reduced);
   try{renderer.render(scene,camera)}catch{current.current.onFail();return}dirty=false;if(!reportedReady){reportedReady=true;current.current.onReady()}
   const markers=placeMarkers(destinations.map((d,i)=>{
    groups[i].localToWorld(v.set(0,-d.r*.18,d.r*d.squash*.88)).project(camera);
@@ -121,7 +114,7 @@ export default function SkyScene(props:Props){
   });
 
  }
- const resize=()=>{mobile=innerWidth<=720;rect=viewport();camera.aspect=rect.width/rect.height;camera.updateProjectionMatrix();renderer.setPixelRatio(Math.min(devicePixelRatio,limited()?1.25:1.65));renderer.setSize(rect.width,rect.height,false);lastWorld='';dirty=true};
+ const resize=()=>{mobile=innerWidth<=720;rect=viewport();camera.aspect=rect.width/rect.height;camera.updateProjectionMatrix();renderer.setPixelRatio(Math.min(devicePixelRatio,limited()?1.25:1.65));renderer.setSize(rect.width,rect.height,false);atmosphere.setLimited(limited());updateLighting();lastWorld='';dirty=true};
  window.addEventListener('resize',resize);const canvasNode=canvas.current;
  const ro=new ResizeObserver(resize);ro.observe(canvasNode);
  const toolbarObserver=new ResizeObserver(()=>{measureToolbar();dirty=true});const toolbar=document.querySelector('.scene-tools');if(toolbar)toolbarObserver.observe(toolbar);
@@ -130,7 +123,7 @@ export default function SkyScene(props:Props){
  return()=>{alive=false;cancelAnimationFrame(raf);scrollTween?.kill();ro.disconnect();toolbarObserver.disconnect();controls.removeEventListener('change',wake);controls.removeEventListener('start',onOrbitStart);controls.dispose();window.removeEventListener('resize',resize);canvasNode.removeEventListener('pointermove',onPointer);canvasNode.removeEventListener('pointerdown',onDown);canvasNode.removeEventListener('click',onClick);canvasNode.removeEventListener('webglcontextlost',contextLost);labelElements.forEach(e=>e.remove());
  const geometries=new Set<T.BufferGeometry>(),materials=new Set<T.Material>(),textures=new Set<T.Texture>();
  scene.traverse(o=>{if(o instanceof T.Mesh||o instanceof T.Line||o instanceof T.Sprite){if('geometry'in o)geometries.add(o.geometry);(Array.isArray(o.material)?o.material:[o.material]).forEach(m=>{materials.add(m);if('map'in m&&m.map instanceof T.Texture)textures.add(m.map)})}});
- geometries.forEach(g=>g.dispose());materials.forEach(m=>m.dispose());textures.forEach(t=>t.dispose());skyReflection.dispose();renderer.dispose();};
+ geometries.forEach(g=>g.dispose());materials.forEach(m=>m.dispose());textures.forEach(t=>t.dispose());skyReflection.dispose();sunlight.shadow.dispose();renderer.dispose();};
  },[]);
  return <><canvas ref={canvas} className="sky-canvas" aria-label="Eight connected floating worlds, each with distinct architecture. Five projects share one Project Atelier. Use Explore in 3D to orbit; all portfolio details are available in the content panels." role="img"/><div ref={labels} className="island-labels"/></>
 }

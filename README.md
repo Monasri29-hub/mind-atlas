@@ -50,6 +50,16 @@ Reduced-motion world changes move both the camera and its orbit pivot immediatel
 
 ## The worlds
 
+### Phase 2 — sky and island foundations
+
+The shared environment now uses closed, vertex-colored rock strata with irregular ledges, embedded outcrops, moss patches, and instanced trailing greenery. Shaded near and horizon cloud banks add depth over the continuous sky background. Distant settlements provide scale without becoming extra portfolio destinations or expanding the navigation camera bounds.
+
+Warm directional light, cool sky fill, and chapter-focused desktop shadow maps separate architecture from terrain. Mobile and touch modes disable shadow maps and distant settlements, halve the cloud banks, and retain the existing resolution and frame limits. Reduced motion stops cloud drift and transit signals.
+
+Sky bridges now attach to the actual elliptical or rectangular deck footprints and include landing sills and small guide lights. Six railed walkways and three energy routes preserve the nine-link network. The fixed transit architecture is batched into 11 mesh draws, with moving signals kept separate. All nine transparent loading/failure stills were regenerated from the updated geometry.
+
+This is the environment foundation pass. The individual landmark redesigns from the Phase 1 concept drawings belong to Phase 3; the procedural worlds are not claimed to reproduce those drawings yet. See [the Phase 2 implementation notes](docs/Phase_2_Environment.md).
+
 | World | Visual identity | Portfolio focus |
 | --- | --- | --- |
 | Psychology | Neural forms, thought pathways, soft emotional light | Human behavior, cognition, and human-centered design |
@@ -92,6 +102,7 @@ Open `http://localhost:3000`.
 | `npm run typecheck` | Check TypeScript without emitting files |
 | `npm run verify:worlds` | Verify world geometry, batching, chapter framing, connections, and project selection |
 | `npm run verify:navigation` | Verify instant world changes and inspected-camera handoffs with real OrbitControls |
+| `npm run verify:environment` | Verify closed terrain, route attachment, batched transit, cloud quality modes, and reduced motion |
 | `npm run build` | Generate the production website in `out/` |
 | `npm start` | Serve the generated `out/` directory locally |
 
@@ -107,6 +118,9 @@ Run `npm run build` before `npm start`. No environment variables are needed.
 | `components/Portfolio.tsx` | Sections, navigation, project dialogs, and readable content |
 | `components/SkyScene.tsx` | Procedural Three.js worlds and camera behavior |
 | `components/WorldArchitecture.ts` | Shared materials and eight distinct world builders |
+| `components/FloatingFoundation.ts` | Closed weathered rock strata, outcrops, and planted cliff edges |
+| `components/SkyEnvironment.ts` | Shaded cloud texture, near/horizon cloud layers, and distant settlements |
+| `components/SkyRoutes.ts` | Deck-aware arrival points, railed sky bridges, and moving transit signals |
 | `components/WorldCatalog.ts` | World positions, route graph, and collision-aware numbered markers |
 | `components/SceneFraming.ts` | Camera framing from the real geometry, including instanced foliage |
 | `components/CameraNavigation.ts` | Camera and orbit-pivot synchronization for instant navigation and smooth handoffs |
