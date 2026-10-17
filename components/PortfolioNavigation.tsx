@@ -1,10 +1,11 @@
 import type {RefObject} from 'react';
+import type {ViewAction} from './CameraNavigation';
 
 export const worlds=[['home','Overview'],['psychology','Psychology'],['ai','AI'],['projects','Projects'],['culture','Culture'],['hackathons','Hackathons'],['research','Research'],['technology','Technology'],['future','Future']] as const;
 const sceneNames:Record<string,[string,string]>={home:['The Mind Atlas','Eight worlds of connected curiosity'],psychology:['The Mind Garden','Psychology'],ai:['Intelligence Nexus','Artificial intelligence'],projects:['The Project Atelier','Selected projects'],culture:['Cultural Crossroads','Culture'],hackathons:['The Invention Yard','Hackathons'],research:['The Observatory','Research'],technology:['The Systems Nexus','Technology'],future:['The Open Horizon','Next chapter']};
-type MenuProps={active:number;menu:boolean;onMenu:()=>void;reduced:boolean;onMotion:()=>void;buttonRef:RefObject<HTMLButtonElement|null>;menuRef:RefObject<HTMLElement|null>};
+type MenuProps={active:number;menu:boolean;onMenu:()=>void;reduced:boolean;onMotion:()=>void;illustrated:boolean;onView:()=>void;onExplore?:()=>void;buttonRef:RefObject<HTMLButtonElement|null>;menuRef:RefObject<HTMLElement|null>};
 
-export function PortfolioHeader({active,menu,onMenu,reduced,onMotion,buttonRef,menuRef}:MenuProps){
+export function PortfolioHeader({active,menu,onMenu,reduced,onMotion,illustrated,onView,onExplore,buttonRef,menuRef}:MenuProps){
  return <header className="header">
   <a className="brand" href="#home" aria-label="Mind Atlas, Monasri’s portfolio overview"><svg className="brand-symbol" viewBox="0 0 48 48" aria-hidden="true"><circle cx="24" cy="24" r="13"/><ellipse cx="24" cy="24" rx="23" ry="7" transform="rotate(-28 24 24)"/><circle className="orbit-point" cx="43" cy="14" r="3"/></svg><span>MIND ATLAS<span className="brand-small">MONASRI</span></span></a>
   <nav className="professional-nav" aria-label="Main navigation"><a href="#projects">Projects</a><a href="#psychology">About</a><a href="#research">Research</a><a href="#future">Contact <span aria-hidden="true">↗</span></a></nav>
@@ -13,6 +14,8 @@ export function PortfolioHeader({active,menu,onMenu,reduced,onMotion,buttonRef,m
    <p className="content-label">Choose a world</p><div className="world-menu-links">{worlds.map(([id,label],i)=><a key={id} href={`#${id}`} aria-current={active===i?'location':undefined}><span className="menu-number" aria-hidden="true">{String(i).padStart(2,'0')}</span><span>{label}</span><span aria-hidden="true">↗</span></a>)}</div>
    <div className="menu-profiles"><a href="https://www.linkedin.com/in/kundeti-monasri-3650ba326" target="_blank" rel="noopener noreferrer">LinkedIn ↗</a><a href="https://github.com/Monasri29-hub" target="_blank" rel="noopener noreferrer">GitHub ↗</a></div>
    <button className="menu-motion" onClick={onMotion} aria-pressed={reduced}>Reduce motion <span>{reduced?'On':'Off'}</span></button>
+   <button className="menu-motion" onClick={onView} aria-pressed={illustrated}>Illustrated view <span>{illustrated?'On':'Off'}</span></button><p className="view-note">Illustrated view pauses 3D rendering. All portfolio content stays available.</p>
+   {onExplore&&<button className="menu-explore" onClick={onExplore}>Explore current world in 3D <span aria-hidden="true">↗</span></button>}
   </nav>
  </header>;
 }
@@ -31,13 +34,15 @@ export function PortfolioFooter({active,reduced,onMotion,onMenu,menu,ready}:{act
  </footer>;
 }
 
-export function SceneTools({active,ready,failed,inspect,traveling,onReset,onInspect,onWorld}:{active:string;ready:boolean;failed:boolean;inspect:boolean;traveling:boolean;onReset:()=>void;onInspect:()=>void;onWorld:(id:string)=>void}){
+export function SceneTools({active,ready,failed,illustrated,covered,inspect,traveling,onView,onViewAction,onReset,onInspect,onWorld}:{active:string;ready:boolean;failed:boolean;illustrated:boolean;covered?:boolean;inspect:boolean;traveling:boolean;onView:()=>void;onViewAction:(action:ViewAction)=>void;onReset:()=>void;onInspect:()=>void;onWorld:(id:string)=>void}){
  const name=sceneNames[active]??sceneNames.home,index=worlds.findIndex(w=>w[0]===active);
- return <aside className="scene-tools" aria-label={`3D controls: ${name[0]}`}>
-  <div className="scene-heading" data-traveling={traveling}><span className="scene-kicker">{failed?'ILLUSTRATED VIEW':!ready?'LOADING WORLD':traveling?'TRAVELLING':active==='home'?'08 WORLDS · ONE ATLAS':`${String(index).padStart(2,'0')} / 08`}</span><span className="scene-location">{active==='home'?'The Mind Atlas':name[1]}</span></div>
-  <div className="scene-controls">{!failed&&<button className="scene-explore" onClick={onInspect} disabled={!ready} aria-busy={!ready} aria-pressed={inspect}>{!ready?'Loading 3D…':inspect?'← Return to portfolio':'Explore in 3D ↗'}</button>}{inspect&&<button className="scene-reset" onClick={onReset}>Reset view <span aria-hidden="true">↺</span></button>}{inspect&&<p className="scene-instructions">Drag to orbit · Pinch or scroll to zoom · Esc to return</p>}</div>
-  <span className="sr-only" role="status" aria-live="polite" aria-atomic="true">{ready&&!failed?(traveling?`Travelling to ${name[0]}.`:`${name[0]} ready.`):''}</span>
-  {active==='home'&&!inspect&&!failed&&ready&&<p className="scene-hint">Choose a numbered island, or scroll to explore.</p>}
+ const staticView=illustrated||failed;
+ return <aside className="scene-tools" hidden={covered} aria-label={`3D controls: ${name[0]}`}>
+  <div className="scene-heading" data-traveling={traveling}><span className="scene-kicker">{staticView?'ILLUSTRATED VIEW':!ready?'LOADING WORLD':traveling?'TRAVELLING':active==='home'?'08 WORLDS · ONE ATLAS':`${String(index).padStart(2,'0')} / 08`}</span><span className="scene-location">{active==='home'?'The Mind Atlas':name[1]}</span></div>
+  <div className="scene-controls"><button className="scene-explore" onClick={staticView?onView:onInspect} disabled={!ready&&!staticView&&!inspect} aria-busy={!ready&&!staticView} aria-pressed={inspect}>{staticView?(failed?'Retry 3D ↗':'Enable 3D ↗'):inspect?'← Return to portfolio':!ready?'Loading 3D…':'Explore in 3D ↗'}</button>{inspect&&<button className="scene-reset" onClick={onReset} disabled={!ready}>Reset view <span aria-hidden="true">↺</span></button>}{inspect&&<p className="scene-instructions" id="orbit-help">Use the view buttons, or drag to orbit. Pinch or scroll to zoom. Esc returns to the portfolio.</p>}</div>
+  <span className="sr-only" role="status" aria-live="polite" aria-atomic="true">{staticView?`Illustrated view of ${name[0]}.`:ready?(traveling?`Travelling to ${name[0]}.`:`${name[0]} ready.`):''}</span>
+  {inspect&&<div className="scene-orbit-controls" role="group" aria-label="Orbit and zoom controls" aria-describedby="orbit-help">{([['left','Orbit left'],['right','Orbit right'],['up','Look up'],['down','Look down'],['in','Zoom in'],['out','Zoom out']] as [ViewAction,string][]).map(([action,label])=><button key={action} disabled={!ready} onClick={()=>onViewAction(action)}>{label}</button>)}</div>}
+  {active==='home'&&!inspect&&!staticView&&ready&&<p className="scene-hint">Choose a numbered island, or scroll to explore.</p>}
   {inspect&&<nav className="scene-destinations" aria-label="Travel between all eight worlds">{worlds.map(([id,label])=><button key={id} aria-pressed={active===id} onClick={()=>onWorld(id)}>{label}</button>)}</nav>}
   {failed&&<p className="scene-fallback-note">3D is unavailable here. Use the world navigation to explore the portfolio.</p>}
  </aside>;

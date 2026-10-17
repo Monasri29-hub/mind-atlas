@@ -19,4 +19,5 @@ jobs:
       - run: npm run verify:worlds
       - run: npm run verify:navigation
       - run: npm run verify:environment
+      - run: npm run verify:runtime
       - run: npm run build

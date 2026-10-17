@@ -15,10 +15,16 @@ export const connections = [[0,1],[1,2],[2,0],[0,3],[1,4],[3,5],[5,6],[5,7],[4,7
 export function placeMarkers(points:{x:number;y:number;visible:boolean}[],width:number,height:number,obstacles:{left:number;top:number;right:number;bottom:number}[]=[]){
  const placed:{x:number;y:number;visible:boolean}[]=[],gap=52,inset=25;
  for(const p of points){
- const x=Math.max(inset,Math.min(width-inset,p.x));let y=Math.max(inset,Math.min(height-inset,p.y));
- if(p.visible){const offset=[0,1,-1,2,-2,3,-3,4,-4].find(offset=>{
- const py=y+offset*gap;return py>=inset&&py<=height-inset&&placed.every(other=>!other.visible||Math.hypot(x-other.x,py-other.y)>=gap)&&obstacles.every(o=>x+22<o.left||x-22>o.right||py+22<o.top||py-22>o.bottom)});
- if(offset===undefined){placed.push({x,y,visible:false});continue}y+=offset*gap;}
+ let x=Math.max(inset,Math.min(width-inset,p.x)),y=Math.max(inset,Math.min(height-inset,p.y));
+ if(p.visible){let candidate:{x:number;y:number}|undefined;
+ // Prefer the original horizontal alignment; compact stages can use adjacent columns.
+ for(const dx of [0,1,-1,2,-2]){
+  const px=x+dx*gap;if(px<inset||px>width-inset)continue;
+  const offset=[0,1,-1,2,-2,3,-3,4,-4].find(offset=>{
+   const py=y+offset*gap;return py>=inset&&py<=height-inset&&placed.every(other=>!other.visible||Math.hypot(px-other.x,py-other.y)>=gap)&&obstacles.every(o=>px+22<o.left||px-22>o.right||py+22<o.top||py-22>o.bottom)});
+  if(offset!==undefined){candidate={x:px,y:y+offset*gap};break}
+ }
+ if(!candidate){placed.push({x,y,visible:false});continue}x=candidate.x;y=candidate.y;}
  placed.push({x,y,visible:p.visible});
  }return placed;
 }

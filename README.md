@@ -16,8 +16,8 @@ A cinematic floating-island portfolio built with Next.js, React, TypeScript, Thr
 - Opaque editorial reading panels, prominent world titles, and named destination navigation.
 - Project cards expose purpose, individual contribution, scope, and technologies before opening a case study.
 - Skills are connected to selected projects; participation, experience, communities, and goals have readable content blocks.
-- Keyboard-accessible project dialogs, reduced-motion support, and a manual motion toggle.
-- Illustrated fallback when WebGL is unavailable.
+- Keyboard-accessible project dialogs and six orbit/zoom buttons, with persistent motion preferences.
+- Optional illustrated view with all content available; automatic fallback when WebGL is unavailable.
 - Static export: no database, API keys, or paid model services required to run the portfolio.
 
 ## World architecture
@@ -38,7 +38,7 @@ Scroll or select a chapter to fly to its world. Choose **Explore in 3D** to drag
 
 Concept illustrations provide the art direction. The interactive implementation uses lightweight procedural geometry. Each world has a matching transparent code-rendered fallback still. An overview still appears during loading and when WebGL is unavailable. A GPU error boundary keeps failures isolated from the readable portfolio. Important portfolio content remains in readable HTML panels.
 
-Opaque static architecture is batched by material within each world. Animated objects, transparent surfaces, and project selection remain independent. Geometry checks verify the actual batched scene, chapter camera framing at three viewport shapes, overview framing and non-overlapping markers at five scene sizes, complete route connectivity, and all five project selection targets. These checks also run in GitHub Actions.
+Opaque static architecture is batched by material within each world. Animated objects, transparent surfaces, and project selection remain independent. Geometry checks verify the actual batched scene and instance transforms, chapter camera framing at six viewport shapes, overview framing and non-overlapping markers at seven scene sizes, complete route connectivity, and all five project selection targets. These checks also run in GitHub Actions.
 
 ## Layout and atmosphere repair
 
@@ -84,6 +84,12 @@ Each world has a deliberate arrival angle fitted to its actual geometry. Direct 
 
 Camera checks cover preset/orbit handoffs, opposite viewing directions, flight continuity, interruption, and pivot clearance. Eight regenerated fallback views match the new arrivals. Live browser and device verification remains outstanding. See [the Phase 5 implementation notes](docs/Phase_5_Cinematic_Travel.md).
 
+### Phase 6 — devices, accessibility, and performance
+
+Mobile reading uses a smaller sky stage, safe-area spacing, wrapping metadata, and stacked narrow-screen contact actions. Scene controls step aside when reading panels cover the stage; the directory still provides 3D entry. Six named orbit/zoom buttons make inspection operable without dragging. Hidden reading content becomes inert during inspection, return navigation focuses the chapter, and project dialogs identify their initial close control.
+
+Motion and illustrated-view choices persist locally. Illustrated view stops the GPU scene while keeping every world and project readable; Save-Data defaults to this mode when no explicit choice exists. Rendering sleeps behind menus/dialogs, in hidden tabs, and when mobile reading covers the stage. Framebuffer pixel budgets supplement the existing quality limits. Runtime checks cover scheduler lifecycle, 42 viewport/DPI budgets, and 600 camera-button adjustments. Live device performance and accessibility acceptance remain pending. See [the Phase 6 implementation notes](docs/Phase_6_Device_Accessibility_Performance.md).
+
 | World | Visual identity | Portfolio focus |
 | --- | --- | --- |
 | Psychology | Neural forms, thought pathways, soft emotional light | Human behavior, cognition, and human-centered design |
@@ -127,6 +133,7 @@ Open `http://localhost:3000`.
 | `npm run verify:worlds` | Verify world geometry, batching, chapter framing, connections, and project selection |
 | `npm run verify:navigation` | Verify instant world changes and inspected-camera handoffs with real OrbitControls |
 | `npm run verify:environment` | Verify closed terrain, route attachment, batched transit, cloud quality modes, and reduced motion |
+| `npm run verify:runtime` | Verify render sleep/resume/disposal, framebuffer budgets, and bounded button-operated camera controls |
 | `npm run build` | Generate the production website in `out/` |
 | `npm start` | Serve the generated `out/` directory locally |
 

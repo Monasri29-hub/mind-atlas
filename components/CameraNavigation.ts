@@ -1,7 +1,19 @@
-import {Quaternion,Vector3,type PerspectiveCamera} from 'three';
+import {Quaternion,Spherical,Vector3,type PerspectiveCamera} from 'three';
 import type {OrbitControls} from 'three/examples/jsm/controls/OrbitControls.js';
 
 export type CameraView={x:number;y:number;z:number;lx:number;ly:number;lz:number};
+export type ViewAction='left'|'right'|'up'|'down'|'in'|'out';
+
+/** Accessible buttons use the same orbit pivot and distance/polar bounds as dragging. */
+export function adjustOrbit(view:CameraView,action:ViewAction){
+ const target=new Vector3(view.lx,view.ly,view.lz),arm=new Vector3(view.x,view.y,view.z).sub(target),spherical=new Spherical().setFromVector3(arm);
+ if(action==='left')spherical.theta-=Math.PI/12;if(action==='right')spherical.theta+=Math.PI/12;
+ if(action==='up')spherical.phi-=Math.PI/18;if(action==='down')spherical.phi+=Math.PI/18;
+ if(action==='in')spherical.radius*=.85;if(action==='out')spherical.radius/=.85;
+ spherical.phi=Math.max(.05,Math.min(Math.PI*.49,spherical.phi));spherical.radius=Math.max(8,Math.min(360,spherical.radius));
+ const eye=new Vector3().setFromSpherical(spherical).add(target);
+ return {...view,x:eye.x,y:eye.y,z:eye.z};
+}
 
 /** Rotate the viewing arm while translating its pivot: never fly through the pivot. */
 export function createCameraFlight(from:CameraView,to:CameraView){

@@ -10,7 +10,8 @@
     "typecheck": "tsc --noEmit",
     "verify:worlds": "node scripts/verify-worlds.mjs",
     "verify:navigation": "node scripts/verify-navigation.mjs",
-    "verify:environment": "node scripts/verify-environment.mjs"
+    "verify:environment": "node scripts/verify-environment.mjs",
+    "verify:runtime": "node scripts/verify-runtime.mjs"
   },
   "dependencies": {
     "@types/node": "^26.6.1",

@@ -9,17 +9,18 @@ import {createCloudTexture,buildSkyEnvironment} from './SkyEnvironment';
 import {buildSkyRoutes} from './SkyRoutes';
 import {batchWorld} from './SceneBatch';
 import {frameObjects} from './SceneFraming';
-import {captureView,syncOrbitView,createCameraFlight} from './CameraNavigation';
-type Props={reduced:boolean;active:string;inspect:boolean;resetView:number;onTravel:(traveling:boolean)=>void;onReady:()=>void;onFail:()=>void;onProject:(id:string)=>void;onWorld:(id:string)=>void};
+import {captureView,syncOrbitView,createCameraFlight,adjustOrbit,type ViewAction} from './CameraNavigation';
+import {createRenderLoop,sceneQuality} from './SceneRuntime';
+type Props={paused:boolean;viewCommand:{sequence:number;action:ViewAction};reduced:boolean;active:string;inspect:boolean;resetView:number;onTravel:(traveling:boolean)=>void;onReady:()=>void;onFail:()=>void;onProject:(id:string)=>void;onWorld:(id:string)=>void};
 export default function SkyScene(props:Props){
- const canvas=useRef<HTMLCanvasElement>(null),labels=useRef<HTMLDivElement>(null),current=useRef(props);current.current=props;
+ const canvas=useRef<HTMLCanvasElement>(null),labels=useRef<HTMLDivElement>(null),current=useRef(props),refresh=useRef<()=>void>(()=>{});current.current=props;
  useEffect(()=>{if(!canvas.current)return;let renderer:T.WebGLRenderer;try{renderer=new T.WebGLRenderer({canvas:canvas.current,alpha:true,antialias:true,powerPreference:'high-performance'});}catch{current.current.onFail();return;}
- let alive=true,reportedReady=false;let mobile=innerWidth<=960;const coarse=matchMedia('(pointer: coarse)');const limited=()=>mobile||coarse.matches;const viewport=()=>canvas.current!.getBoundingClientRect();let rect=viewport();renderer.setPixelRatio(Math.min(devicePixelRatio,limited()?1.25:1.65));renderer.setSize(rect.width,rect.height,false);renderer.outputColorSpace=T.SRGBColorSpace;renderer.toneMapping=T.ACESFilmicToneMapping;renderer.toneMappingExposure=.95;
+ let alive=true,reportedReady=false;let mobile=innerWidth<=960;const coarse=matchMedia('(pointer: coarse)');const device=navigator as Navigator&{deviceMemory?:number;connection?:{saveData?:boolean}};const limited=()=>mobile||coarse.matches||!!device.connection?.saveData||(device.deviceMemory!==undefined&&device.deviceMemory<=4);const viewport=()=>canvas.current!.getBoundingClientRect();let rect=viewport(),quality=sceneQuality(rect.width,rect.height,devicePixelRatio,limited());renderer.setPixelRatio(quality.pixelRatio);renderer.setSize(rect.width,rect.height,false);renderer.outputColorSpace=T.SRGBColorSpace;renderer.toneMapping=T.ACESFilmicToneMapping;renderer.toneMappingExposure=.95;
  const scene=new T.Scene();scene.fog=new T.Fog('#a7cee3',130,330);const camera=new T.PerspectiveCamera(SCENE_FOV,rect.width/rect.height,.2,400);
  const sunlight=new T.DirectionalLight('#fff0d9',3.1);sunlight.position.set(-35,65,35);sunlight.castShadow=true;sunlight.shadow.mapSize.set(2048,2048);sunlight.shadow.bias=-.0002;sunlight.shadow.normalBias=.035;sunlight.shadow.camera.near=.5;sunlight.shadow.camera.far=180;
  scene.add(sunlight,sunlight.target,new T.HemisphereLight('#e5f3ff','#5a7381',1.25));const rim=new T.DirectionalLight('#b8def2',.65);rim.position.set(35,18,-35);scene.add(rim);
  renderer.shadowMap.enabled=!limited();renderer.shadowMap.type=T.PCFShadowMap;renderer.shadowMap.autoUpdate=false;
- const skyReflection=new T.TextureLoader().load('/sky-atmosphere.webp',texture=>{if(!alive){texture.dispose();return}texture.mapping=T.EquirectangularReflectionMapping;texture.colorSpace=T.SRGBColorSpace;scene.environment=texture;scene.environmentIntensity=.3;dirty=true});
+ const skyReflection=new T.TextureLoader().load('/sky-atmosphere.webp',texture=>{if(!alive){texture.dispose();return}texture.mapping=T.EquirectangularReflectionMapping;texture.colorSpace=T.SRGBColorSpace;scene.environment=texture;scene.environmentIntensity=.3;wake()});
  const groups:T.Group[]=[],clickables:T.Object3D[]=[],architectureAnimations:WorldAnimation[]=[];
  const builders:Record<string,(parent:T.Group)=>{animations:WorldAnimation[];exhibits:T.Object3D[]}>={
   psychology:buildMindGarden,ai:buildIntelligenceNexus,projects:buildProjectAtelier,
@@ -50,9 +51,9 @@ export default function SkyScene(props:Props){
  // Chapter changes drive a short camera flight; each chapter then holds its world.
  const controls=new OrbitControls(camera,canvas.current);controls.enableDamping=true;controls.dampingFactor=.08;controls.enablePan=false;controls.minDistance=8;controls.maxDistance=360;controls.maxPolarAngle=Math.PI*.49;controls.enabled=false;
  const frameCache=new Map<string,ReturnType<typeof frameObjects>>();
- function waypoint(){const id=current.current.active,key=id+':'+(rect.width/rect.height).toFixed(3);let view=frameCache.get(key);if(!view){view=frameObjects(id==='home'?groups:groups.filter(g=>g.userData.world===id),id,rect.width/rect.height);frameCache.set(key,view)}return view}
+ function waypoint(){const id=current.current.active,key=id+':'+(rect.width/rect.height).toFixed(3);let view=frameCache.get(key);if(!view){view=frameObjects(id==='home'?groups:groups.filter(g=>g.userData.world===id),id,rect.width/rect.height);if(frameCache.size>=36)frameCache.delete(frameCache.keys().next().value!);frameCache.set(key,view)}return view}
  const overview=waypoint();const target=new T.Vector3(overview.lx,overview.ly,overview.lz);syncOrbitView(camera,controls,overview);
- let dirty=true,lastWorld='',lastInspect=false,lastReset=props.resetView,needsFraming=false;
+ let dirty=true,lastWorld='',lastInspect=false,lastReset=props.resetView,needsFraming=false,lastCommand=props.viewCommand.sequence;
  let markerObstacles:{left:number;top:number;right:number;bottom:number}[]=[];
  const measureToolbar=()=>{markerObstacles=Array.from(document.querySelectorAll('.scene-heading,.scene-controls,.scene-destinations')).map(el=>{const r=el.getBoundingClientRect();return {left:r.left-rect.left-8,top:r.top-rect.top-8,right:r.right-rect.left+8,bottom:r.bottom-rect.top+8}})};
  let scrollTween:gsap.core.Tween|undefined;
@@ -65,8 +66,8 @@ export default function SkyScene(props:Props){
  });
 
  let pointerX=0,pointerY=0,desiredX=0,desiredY=0,hoverX=0,hoverY=0,hoverPending=false,pointerInside=false;
- const onPointer=(e:PointerEvent)=>{pointerInside=true;hoverX=e.clientX;hoverY=e.clientY;hoverPending=true;if(e.pointerType!=='touch'){desiredX=((e.clientX-rect.left)/rect.width-.5)*.45;desiredY=((e.clientY-rect.top)/rect.height-.5)*.2}dirty=true};
- const onLeave=()=>{pointerInside=false;desiredX=desiredY=0;canvas.current!.style.cursor='';dirty=true};
+ const onPointer=(e:PointerEvent)=>{pointerInside=e.pointerType!=='touch';hoverX=e.clientX;hoverY=e.clientY;hoverPending=pointerInside;if(e.pointerType!=='touch'){desiredX=((e.clientX-rect.left)/rect.width-.5)*.45;desiredY=((e.clientY-rect.top)/rect.height-.5)*.2}wake()};
+ const onLeave=()=>{pointerInside=false;desiredX=desiredY=0;canvas.current!.style.cursor='';wake()};
  canvas.current.addEventListener('pointerleave',onLeave);
  canvas.current.addEventListener('pointermove',onPointer,{passive:true});
  const ray=new T.Raycaster(),ndc=new T.Vector2();let startX=0,startY=0;
@@ -82,12 +83,12 @@ export default function SkyScene(props:Props){
   const hit=pick(e.clientX,e.clientY);if(hit?.project)current.current.onProject(hit.project);else if(hit?.world)current.current.onWorld(hit.world);
  };
  canvas.current.addEventListener('pointerdown',onDown);canvas.current.addEventListener('click',onClick);
- let raf=0,last=0,elapsed=0,lastReduced=false;const v=new T.Vector3(),clock=new T.Clock();
- const wake=()=>{dirty=true};controls.addEventListener('change',wake);
- const onOrbitStart=()=>{scrollTween?.kill();current.current.onTravel(false);dirty=true};controls.addEventListener('start',onOrbitStart);
+ let last=0,elapsed=0,lastReduced=false;const v=new T.Vector3(),clock=new T.Clock();
+ function wake(){dirty=true;if(!current.current.paused&&!document.hidden)loop.wake()}controls.addEventListener('change',wake);
+ const onOrbitStart=()=>{scrollTween?.kill();current.current.onTravel(false);wake()};controls.addEventListener('start',onOrbitStart);
  function frame(time:number){
-  raf=requestAnimationFrame(frame);
-  if(document.hidden||time-last<1000/(limited()?30:45))return;
+  if(document.hidden||current.current.paused)return false;
+  if(time-last<1000/quality.fps)return true;
   const dt=Math.min(clock.getDelta(),.05);last=time;
   const reduced=current.current.reduced;
   const world=current.current.active,inspect=current.current.inspect;
@@ -103,19 +104,22 @@ export default function SkyScene(props:Props){
    controls.enabled=inspect;canvas.current!.style.touchAction=inspect?'none':'pan-y';lastWorld=world;lastInspect=inspect;lastReset=current.current.resetView;needsFraming=false;dirty=true;
   }
   if(reduced!==lastReduced){if(reduced){const next=inspect&&!scrollTween?.isActive()?captureView(camera,controls.target):waypoint();scrollTween?.kill();Object.assign(flight,next);pointerX=pointerY=desiredX=desiredY=0;syncOrbitView(camera,controls,flight);current.current.onTravel(false)}dirty=true;lastReduced=reduced}
-  if(reduced&&!dirty)return;
+  if(current.current.viewCommand.sequence!==lastCommand){lastCommand=current.current.viewCommand.sequence;if(inspect){scrollTween?.kill();const next=adjustOrbit(captureView(camera,controls.target),current.current.viewCommand.action);Object.assign(flight,next);syncOrbitView(camera,controls,next);current.current.onTravel(false);dirty=true}}
+  if(reduced&&!dirty)return false;
   if(!reduced)elapsed+=dt;
   const parallax=1-Math.exp(-dt*7),canParallax=!reduced&&!inspect&&!scrollTween?.isActive();pointerX+=((canParallax?desiredX:0)-pointerX)*parallax;pointerY+=((canParallax?desiredY:0)-pointerY)*parallax;
-  if(inspect){if(scrollTween?.isActive()){camera.position.set(flight.x,flight.y,flight.z);controls.target.set(flight.lx,flight.ly,flight.lz)}controls.update();}
+  let controlsMoving=false;
+  if(inspect){if(scrollTween?.isActive()){camera.position.set(flight.x,flight.y,flight.z);controls.target.set(flight.lx,flight.ly,flight.lz)}controlsMoving=controls.update();}
   else{camera.position.set(flight.x+(reduced?0:pointerX),flight.y+(reduced?0:pointerY),flight.z);target.set(flight.lx,flight.ly,flight.lz);camera.lookAt(target);}
   // Follow the actual camera distance so haze never jumps at a chapter boundary.
   if(scene.fog instanceof T.Fog){scene.fog.near=Math.max(45,camera.position.distanceTo(inspect?controls.target:target)*.76);scene.fog.far=scene.fog.near+190}
   groups.forEach((g,i)=>{g.position.y=g.userData.baseY+(reduced?0:Math.sin(elapsed*.35+i)*.07)});
   if(!reduced)architectureAnimations.forEach(a=>a.object.rotation[a.axis]+=dt*a.speed);
   atmosphere.update(elapsed,reduced);transit.update(elapsed,reduced);
-  try{renderer.render(scene,camera)}catch{current.current.onFail();return}dirty=false;
+  try{renderer.render(scene,camera)}catch{current.current.onFail();return false}dirty=controlsMoving;
   if(pointerInside&&(hoverPending||scrollTween?.isActive())){canvas.current!.style.cursor=scrollTween?.isActive()?'':pick(hoverX,hoverY)?'pointer':'';hoverPending=false}
   if(!reportedReady){reportedReady=true;current.current.onReady()}
+  if(world==='home'){
   const markers=placeMarkers(destinations.map((d,i)=>{
    groups[i].localToWorld(v.set(0,-d.r*.18,d.r*d.squash*.88)).project(camera);
    return {x:Math.max(!inspect&&!mobile?rect.width*.12:25,(v.x*.5+.5)*rect.width),y:(-v.y*.5+.5)*rect.height,visible:world==='home'&&v.z>-1&&v.z<1&&Math.abs(v.x)<.96&&Math.abs(v.y)<.92};
@@ -124,18 +128,23 @@ export default function SkyScene(props:Props){
    const el=labelElements[i];el.style.visibility=p.visible?'visible':'hidden';el.style.pointerEvents=p.visible?'auto':'none';
    el.style.transform=`translate3d(${p.x+rect.left-22}px,${p.y+rect.top-22}px,0)`;
   });
-
+  }else labelElements.forEach(el=>{el.style.visibility='hidden';el.style.pointerEvents='none'});
+  return !reduced||controlsMoving||!!scrollTween?.isActive();
  }
- const resize=()=>{mobile=innerWidth<=960;rect=viewport();camera.aspect=rect.width/rect.height;camera.updateProjectionMatrix();renderer.setPixelRatio(Math.min(devicePixelRatio,limited()?1.25:1.65));renderer.setSize(rect.width,rect.height,false);atmosphere.setLimited(limited());updateLighting();measureToolbar();if(!current.current.inspect)needsFraming=true;dirty=true};
+ const loop=createRenderLoop({request:callback=>requestAnimationFrame(callback),cancel:id=>cancelAnimationFrame(id)},frame);
+ const syncActivity=()=>{const paused=current.current.paused||document.hidden;scrollTween?.paused(paused);if(paused)loop.stop();else wake()};refresh.current=syncActivity;
+ document.addEventListener('visibilitychange',syncActivity);
+ const resize=()=>{mobile=innerWidth<=960;rect=viewport();camera.aspect=rect.width/rect.height;camera.updateProjectionMatrix();quality=sceneQuality(rect.width,rect.height,devicePixelRatio,limited());renderer.setPixelRatio(quality.pixelRatio);renderer.setSize(rect.width,rect.height,false);atmosphere.setLimited(limited());updateLighting();measureToolbar();if(!current.current.inspect)needsFraming=true;wake()};
  window.addEventListener('resize',resize);const canvasNode=canvas.current;
  const ro=new ResizeObserver(resize);ro.observe(canvasNode);
- const toolbarObserver=new ResizeObserver(()=>{measureToolbar();dirty=true});const toolbar=document.querySelector('.scene-tools');if(toolbar)toolbarObserver.observe(toolbar);
+ const toolbarObserver=new ResizeObserver(()=>{measureToolbar();wake()});const toolbar=document.querySelector('.scene-tools');if(toolbar)toolbarObserver.observe(toolbar);
  const contextLost=(e:Event)=>{e.preventDefault();current.current.onFail()};
- canvasNode.addEventListener('webglcontextlost',contextLost);raf=requestAnimationFrame(frame);
- return()=>{alive=false;cancelAnimationFrame(raf);scrollTween?.kill();ro.disconnect();toolbarObserver.disconnect();controls.removeEventListener('change',wake);controls.removeEventListener('start',onOrbitStart);controls.dispose();window.removeEventListener('resize',resize);canvasNode.removeEventListener('pointermove',onPointer);canvasNode.removeEventListener('pointerleave',onLeave);canvasNode.removeEventListener('pointerdown',onDown);canvasNode.removeEventListener('click',onClick);canvasNode.removeEventListener('webglcontextlost',contextLost);labelElements.forEach(e=>e.remove());
+ canvasNode.addEventListener('webglcontextlost',contextLost);coarse.addEventListener('change',resize);syncActivity();
+ return()=>{alive=false;loop.dispose();refresh.current=()=>{};document.removeEventListener('visibilitychange',syncActivity);coarse.removeEventListener('change',resize);scrollTween?.kill();ro.disconnect();toolbarObserver.disconnect();controls.removeEventListener('change',wake);controls.removeEventListener('start',onOrbitStart);controls.dispose();window.removeEventListener('resize',resize);canvasNode.removeEventListener('pointermove',onPointer);canvasNode.removeEventListener('pointerleave',onLeave);canvasNode.removeEventListener('pointerdown',onDown);canvasNode.removeEventListener('click',onClick);canvasNode.removeEventListener('webglcontextlost',contextLost);labelElements.forEach(e=>e.remove());
  const geometries=new Set<T.BufferGeometry>(),materials=new Set<T.Material>(),textures=new Set<T.Texture>();
  scene.traverse(o=>{if(o instanceof T.Mesh||o instanceof T.Line||o instanceof T.Sprite){if('geometry'in o)geometries.add(o.geometry);(Array.isArray(o.material)?o.material:[o.material]).forEach(m=>{materials.add(m);if('map'in m&&m.map instanceof T.Texture)textures.add(m.map)})}});
  geometries.forEach(g=>g.dispose());materials.forEach(m=>m.dispose());textures.forEach(t=>t.dispose());skyReflection.dispose();sunlight.shadow.dispose();renderer.dispose();};
  },[]);
+ useEffect(()=>refresh.current(),[props.active,props.inspect,props.resetView,props.reduced,props.paused,props.viewCommand.sequence]);
  return <><canvas ref={canvas} className="sky-canvas" aria-label="Eight connected floating worlds, each with distinct architecture. Five projects share one Project Atelier. Use Explore in 3D to orbit; all portfolio details are available in the content panels." role="img"/><div ref={labels} className="island-labels"/></>
 }

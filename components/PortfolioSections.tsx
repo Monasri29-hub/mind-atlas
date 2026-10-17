@@ -23,8 +23,8 @@ function ProjectCard({project,onProject}:ProjectAction&{project:PortfolioProject
  </article>;
 }
 
-const PortfolioSections=memo(function PortfolioSections({onProject}:ProjectAction){
- return <main id="journey">
+const PortfolioSections=memo(function PortfolioSections({onProject,inspect=false}:ProjectAction&{inspect?:boolean}){
+ return <main id="journey" inert={inspect} aria-hidden={inspect?true:undefined}>
   <section id="home" className="chapter hero" aria-labelledby="home-title" tabIndex={-1}>
    <article className="hero-content reading-panel">
     <p className="eyebrow">KUNDETI MONASRI · HYDERABAD</p>
@@ -115,7 +115,7 @@ export default PortfolioSections;
 
 export function ProjectDetails({project,dialogRef,onClose}:{project:PortfolioProject|null;dialogRef:RefObject<HTMLDialogElement|null>;onClose:()=>void}){
  return <dialog ref={dialogRef} aria-labelledby={project?'project-dialog-title':undefined} aria-describedby={project?'project-dialog-summary':undefined} className="project-dialog" onCancel={event=>{event.preventDefault();onClose()}} onClick={event=>{if(event.target===event.currentTarget){const r=event.currentTarget.getBoundingClientRect();if(event.clientX<r.left||event.clientX>r.right||event.clientY<r.top||event.clientY>r.bottom)onClose()}}}>
-  <div className="dialog-toolbar"><span>PROJECT CASE STUDY</span><button className="close-dialog" onClick={onClose} aria-label="Close project details">Close <span aria-hidden="true">×</span></button></div>
+  <div className="dialog-toolbar"><span>PROJECT CASE STUDY</span><button className="close-dialog" autoFocus onClick={onClose} aria-label="Close project details">Close <span aria-hidden="true">×</span></button></div>
   {project&&<article className="dialog-body"><p className="eyebrow">PROJECT {project.number} · {project.category}</p><h2 id="project-dialog-title">{project.title}</h2><p className="dialog-lead" id="project-dialog-summary">{project.summary}</p><p>{project.description}</p>
    <div className="dialog-output"><p className="content-label">Scope & output</p><p>{project.outcome}</p></div>
    <h3>The question</h3><p>{project.problem}</p><h3>My contribution</h3><p>{project.contribution}</p><h3>The workflow</h3><ol className="workflow">{project.flow.map(step=><li key={step}>{step}</li>)}</ol><h3>Technologies & methods</h3><SkillTags items={project.tech}/>

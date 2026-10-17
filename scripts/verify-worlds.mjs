@@ -32,6 +32,16 @@ forms.traverse(o=>{if(!o.geometry)return;const g=o.geometry,p=g.getAttribute('po
  assert([...edges.values()].every(e=>e.count===2&&e.direction===0),'Architectural forms are closed with consistent winding');g.dispose();
 });material.dispose();
 const allWorlds=[];
+function eachVertex(group,visit){
+ const instance=new T.Matrix4(),matrix=new T.Matrix4(),point=new T.Vector3();
+ group.updateWorldMatrix(true,true);group.traverse(object=>{
+  if(!object.geometry)return;const positions=object.geometry.getAttribute('position');
+  for(let i=0;i<(object instanceof T.InstancedMesh?object.count:1);i++){
+   if(object instanceof T.InstancedMesh){object.getMatrixAt(i,instance);matrix.multiplyMatrices(object.matrixWorld,instance)}else matrix.copy(object.matrixWorld);
+   for(let j=0;j<positions.count;j++)visit(point.fromBufferAttribute(positions,j).applyMatrix4(matrix));
+  }
+ });
+}
 for (const [i, d] of destinations.entries()) {
   const group = new T.Group(); group.position.set(...d.p);
   architecture.buildFloatingFoundation(group, d.r, d.id === 'projects' ? .72 : d.id === 'psychology' ? .8 : 1, i * 110 + 4);
@@ -71,41 +81,35 @@ for (const [i, d] of destinations.entries()) {
     });assert(reachable,`${exhibit.userData.project}: selectable from the actual chapter camera without another exhibit blocking it`);
    }
   }
-  for (const aspect of [.72, 1.3, 2.5]) {
+  for (const aspect of [.6, .72, 1.3, 2.5, 4.5, 7]) {
     const view = frameObjects([group],d.id,aspect), camera = new T.PerspectiveCamera(SCENE_FOV, aspect, .2, 400);
     camera.position.set(view.x, view.y, view.z); camera.lookAt(view.lx, view.ly, view.lz); camera.updateMatrixWorld(true);
     let extent = 0;
-    group.traverse(object => {
-      if (!object.geometry) return;
-      const positions = object.geometry.getAttribute('position'), p = new T.Vector3();
-      for (let index = 0; index < positions.count; index++) {
-        p.fromBufferAttribute(positions, index).applyMatrix4(object.matrixWorld).project(camera);
+    eachVertex(group,p=>{
+        p.project(camera);
         assert(p.z > -1 && p.z < 1, `${d.id}: visible depth`);
         extent = Math.max(extent, Math.abs(p.x), Math.abs(p.y));
-      }
     });
     assert(extent < 1.04, `${d.id}: chapter framing clipped at aspect ${aspect} (${extent.toFixed(3)})`);
   }
   console.log(`${d.id}: ${originalObjects} → ${meshes} geometry objects, ${Math.round(triangles)} triangles; framing and selection OK`);
 }
 console.log('All eight worlds are connected; all five projects remain in one gallery.');
-for(const [width,height]of [[1363,860],[929,628],[666,628],[390,422],[360,320]]){
+for(const [width,height]of [[1363,860],[929,628],[666,628],[390,422],[360,320],[390,265],[844,120]]){
   const camera=new T.PerspectiveCamera(SCENE_FOV,width/height,.2,400),view=frameObjects(allWorlds,'home',width/height);
   camera.position.set(view.x,view.y,view.z);camera.lookAt(view.lx,view.ly,view.lz);camera.updateMatrixWorld(true);
   let minX=Infinity,maxX=-Infinity,minY=Infinity,maxY=-Infinity;
-  allWorlds.forEach(group=>group.traverse(object=>{
-    if(!object.geometry)return;const positions=object.geometry.getAttribute('position'),p=new T.Vector3();
-    for(let i=0;i<positions.count;i++){
-      p.fromBufferAttribute(positions,i).applyMatrix4(object.matrixWorld).project(camera);
+  allWorlds.forEach(group=>eachVertex(group,p=>{
+      p.project(camera);
       assert(Math.abs(p.x)<1&&Math.abs(p.y)<1,'Overview keeps every island in frame');
+      assert(p.z>-1&&p.z<1,'Overview keeps every island within camera depth');
       minX=Math.min(minX,p.x);maxX=Math.max(maxX,p.x);minY=Math.min(minY,p.y);maxY=Math.max(maxY,p.y);
-    }
   }));
   assert(Math.max(maxX-minX,maxY-minY)>1.25,'Overview uses the available frame');
   const obstacle={left:width-300,top:12,right:width-12,bottom:128};
   const points=destinations.map(d=>{const p=new T.Vector3(d.p[0],d.p[1]-d.r*.18,d.p[2]+d.r*d.squash*.88).project(camera);return {x:(p.x*.5+.5)*width,y:(-p.y*.5+.5)*height,visible:true}});
   const markers=placeMarkers(points,width,height,[obstacle]);
-  assert(markers.filter(m=>m.visible).length>=6,'Compact views retain at least six map beacons');
+  assert(markers.filter(m=>m.visible).length>=(height<180?3:6),'Compact views retain useful beacons; full destination navigation remains in HTML');
   for(const [i,m]of markers.entries())if(m.visible){
     assert(m.x>=25&&m.x<=width-25&&m.y>=25&&m.y<=height-25,'Marker stays within the scene');
     assert(m.x+20<obstacle.left||m.x-20>obstacle.right||m.y+20<obstacle.top||m.y-20>obstacle.bottom,'Marker clears scene controls');
