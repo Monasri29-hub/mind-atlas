@@ -3,13 +3,15 @@
  --header-base:72px;--footer-base:72px;--reader-width:clamp(330px,29vw,420px);--scene-left:calc(var(--edge-left) + var(--reader-width) + 16px);
  --header:calc(var(--header-base) + env(safe-area-inset-top,0px));
  --footer:calc(var(--footer-base) + env(safe-area-inset-bottom,0px));
+ --reading-top:calc(var(--header) + 16px);
  --gutter:clamp(20px,3.5vw,64px);--edge-left:max(var(--gutter),env(safe-area-inset-left,0px));--edge-right:max(var(--gutter),env(safe-area-inset-right,0px));
  font-family:system-ui,-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;color:var(--ink);background:#dbeaf0;font-synthesis:none;
 }
 *{box-sizing:border-box}
 [hidden]{display:none!important}
-html{height:100%;overflow:hidden}
-body{margin:0;height:100%;overflow:hidden}
+html{min-height:100%;overflow-x:clip;overflow-y:auto;scroll-behavior:smooth;scroll-padding-top:var(--reading-top);scroll-padding-bottom:calc(var(--footer) + 24px);scrollbar-width:none}
+html::-webkit-scrollbar{display:none}
+body{margin:0;min-height:100%;overflow-x:clip}
 button,a,summary{-webkit-tap-highlight-color:transparent;touch-action:manipulation}
 button{font:inherit;color:inherit;cursor:pointer;background:none;border:0}
 a{color:inherit;text-decoration:none}
@@ -54,19 +56,14 @@ button:disabled{cursor:wait;opacity:.65}
 .view-note{font-size:13px;line-height:1.6;color:var(--muted);margin:6px 0 12px}
 .menu-explore{display:flex;align-items:center;justify-content:space-between;gap:12px;width:100%;min-height:48px;text-align:left;font-size:14px;font-weight:600;border-top:1px solid var(--line);padding:12px 0}
 
-/* The live stage and reading rail have non-overlapping viewport regions. */
-#journey{position:fixed;z-index:3;left:var(--edge-left);top:var(--header);bottom:var(--footer);width:var(--reader-width);margin:0;padding:16px 6px 24px 0;overflow-y:auto;overflow-x:hidden;overscroll-behavior:contain;scrollbar-width:thin;scrollbar-color:#839aa655 transparent;scroll-padding:16px}
-#journey::-webkit-scrollbar{width:4px}
-#journey::-webkit-scrollbar-track{background:transparent}
-#journey::-webkit-scrollbar-thumb{background:#839aa655;border-radius:4px}
-#journey:hover,#journey:focus-within{scrollbar-color:#738d9c transparent}
-#journey:hover::-webkit-scrollbar-thumb,#journey:focus-within::-webkit-scrollbar-thumb{background:#738d9c}
-.chapter{position:relative;min-height:100%;margin:0;scroll-margin-top:16px}
+/* One document scroll; the selected details never create a nested scroller. */
+#journey{position:relative;z-index:3;width:var(--reader-width);min-height:100svh;margin-left:var(--edge-left);padding:var(--reading-top) 0 calc(var(--footer) + 24px)}
+.chapter{position:relative;margin:0;scroll-margin-top:var(--reading-top)}
 .chapter:last-child{margin-bottom:0}
 .chapter:focus{outline:none}
 .chapter:focus-visible .reading-panel{outline:3px solid #087494;outline-offset:-4px}
 .reading-panel{min-width:0;width:100%;padding:26px;background:var(--paper);border:1px solid #d4d9d7;border-radius:20px;box-shadow:0 14px 44px #1b455310}
-#journey button,#journey a,#journey summary{scroll-margin-block:20px}
+#journey button,#journey a,#journey summary{scroll-margin-block:var(--reading-top) calc(var(--footer) + 24px)}
 #journey:focus-visible{outline:2px solid #087494;outline-offset:2px}
 .reading-panel>p{font-size:16px;color:var(--muted);margin:18px 0}
 .eyebrow{font-size:12px;line-height:1.55;letter-spacing:1.35px;font-weight:700;color:var(--world-accent);margin:0 0 20px}
@@ -171,7 +168,7 @@ button:disabled{cursor:wait;opacity:.65}
 
 /* Live Three.js is the primary presentation in every browsing mode. */
 .world-stage{position:fixed;left:var(--scene-left);right:0;top:var(--header);bottom:var(--footer);z-index:1}
-.sky-canvas{position:absolute;inset:0;width:100%;height:100%;opacity:0;touch-action:none;background:transparent}
+.sky-canvas{position:absolute;inset:0;width:100%;height:100%;opacity:0;touch-action:pan-y pinch-zoom;background:transparent}
 .portfolio[data-ready=true] .sky-canvas{opacity:1}
 .scene-loading{position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center;align-items:center;gap:12px;padding:24px;text-align:center;color:var(--ink)}
 .scene-loading p{font-size:14px;max-width:34ch;margin:0;color:var(--muted)}
@@ -236,12 +233,12 @@ button:disabled{cursor:wait;opacity:.65}
 
 @media(max-width:1280px){.nav-number{display:none}.professional-nav{gap:20px}}
 @media(max-width:1100px){
- :root{--header-base:64px;--footer-base:76px;--gutter:24px;--scene-height:clamp(180px,32svh,340px)}
+ :root{--header-base:64px;--footer-base:76px;--gutter:24px;--scene-height:clamp(180px,32svh,340px);--reading-top:calc(var(--header) + var(--scene-height) + 12px)}
  .professional-nav{display:none}
  .menu-desktop-label{display:none}.menu-mobile-label{display:inline}
- .world-stage{left:0;right:0;top:var(--header);height:var(--scene-height);bottom:auto}
+ .world-stage{left:0;right:0;top:var(--header);height:var(--scene-height);bottom:auto;z-index:4;background:#a6cee5 url('/sky-atmosphere.webp') center/cover no-repeat}
  .scene-tools{left:var(--edge-left);right:var(--edge-right);top:calc(var(--header) + 8px)}
- #journey{left:var(--edge-left);right:var(--edge-right);width:auto;top:calc(var(--header) + var(--scene-height));bottom:var(--footer);padding:12px 0 24px}
+ #journey{width:calc(100% - var(--edge-left) - var(--edge-right))}
  .reading-panel{padding:28px}
  .section-heading h2{font-size:clamp(38px,5.5vw,50px)}
  .world-navigation,.motion-toggle,.travel-status{display:none}
@@ -278,8 +275,8 @@ button:disabled{cursor:wait;opacity:.65}
 }
 @media(max-width:1100px) and (max-height:600px){:root{--scene-height:clamp(120px,26svh,180px)}}
 @media(max-width:1100px) and (min-width:560px) and (orientation:landscape){
- :root{--reader-width:clamp(260px,40vw,380px)}
- #journey{top:var(--header);left:var(--edge-left);right:auto;width:var(--reader-width);padding-right:12px}
+ :root{--reader-width:clamp(260px,40vw,380px);--reading-top:calc(var(--header) + 16px)}
+ #journey{width:var(--reader-width)}
  .world-stage{left:var(--scene-left);top:var(--header);height:auto;bottom:var(--footer)}
  .scene-tools{left:calc(var(--scene-left) + 8px);top:calc(var(--header) + 8px)}
 }

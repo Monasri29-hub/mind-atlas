@@ -47,11 +47,13 @@ export default function Portfolio(){
   restore();window.addEventListener('hashchange',restore);return()=>window.removeEventListener('hashchange',restore);
  },[go]);
  // Reading never changes the world or interrupts the camera. Travel is explicit.
- useEffect(()=>{document.getElementById('journey')?.scrollTo({top:0,behavior:'instant'})},[active]);
+ useEffect(()=>{window.scrollTo({top:0,behavior:'auto'})},[active]);
  useEffect(()=>{if(!selected){dialog.current?.close();return}if(!dialog.current?.open)dialog.current?.showModal()},[selected]);
  useEffect(()=>{
-  if(!inspect&&!selected)return;const previous=document.body.style.overflow;document.body.style.overflow='hidden';
-  return()=>{document.body.style.overflow=previous};
+  if(!inspect&&!selected)return;
+  const root=document.documentElement,previousRoot=root.style.overflow,previousBody=document.body.style.overflow;
+  root.style.overflow='hidden';document.body.style.overflow='hidden';
+  return()=>{root.style.overflow=previousRoot;document.body.style.overflow=previousBody};
  },[inspect,selected]);
  useEffect(()=>{
   if(!menu)return;
