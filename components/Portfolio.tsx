@@ -21,7 +21,6 @@ export default function Portfolio(){
   const index=worlds.findIndex(w=>w[0]===id),section=document.getElementById(id);
   if(index<0||!section)return;
   setActive(index);setMenu(false);if(!keepInspect)setInspect(false);
-  const reader=document.getElementById('journey');reader?.scrollTo({top:section.offsetTop-16,behavior:'instant'});
   if(record&&location.hash!==`#${id}`)history.pushState(null,'',`#${id}`);
   cancelAnimationFrame(focusFrame.current);
   if(focus&&!keepInspect)focusFrame.current=requestAnimationFrame(()=>section.focus({preventScroll:true}));
@@ -33,7 +32,7 @@ export default function Portfolio(){
   setActive(index);setMenu(false);setFailed(false);setInspect(true);
   cancelAnimationFrame(focusFrame.current);
   focusFrame.current=requestAnimationFrame(()=>document.querySelector<HTMLElement>('.scene-explore')?.focus({preventScroll:true}));
- },[inspect,failed]);
+ },[failed]);
 
  useEffect(()=>{
   const preference=matchMedia('(prefers-reduced-motion: reduce)');
@@ -47,15 +46,8 @@ export default function Portfolio(){
   const restore=()=>{const id=location.hash.slice(1)||'home';if(worlds.some(w=>w[0]===id))go(id,false,false,false)};
   restore();window.addEventListener('hashchange',restore);return()=>window.removeEventListener('hashchange',restore);
  },[go]);
- useEffect(()=>{
-  if(inspect)return;let frame=0;
-  const reader=document.getElementById('journey')!;
-  const chapters=Array.from(reader.querySelectorAll<HTMLElement>('.chapter'));
-  const update=()=>{frame=0;let index=0;chapters.forEach((chapter,i)=>{if(chapter.getBoundingClientRect().top<=reader.getBoundingClientRect().top+reader.clientHeight*.3)index=i});setActive(index)};
-  const schedule=()=>{if(!frame)frame=requestAnimationFrame(update)};
-  schedule();reader.addEventListener('scroll',schedule,{passive:true});window.addEventListener('resize',schedule);
-  return()=>{cancelAnimationFrame(frame);reader.removeEventListener('scroll',schedule);window.removeEventListener('resize',schedule)};
- },[inspect]);
+ // Reading never changes the world or interrupts the camera. Travel is explicit.
+ useEffect(()=>{document.getElementById('journey')?.scrollTo({top:0,behavior:'instant'})},[active]);
  useEffect(()=>{if(!selected){dialog.current?.close();return}if(!dialog.current?.open)dialog.current?.showModal()},[selected]);
  useEffect(()=>{
   if(!inspect&&!selected)return;const previous=document.body.style.overflow;document.body.style.overflow='hidden';
@@ -104,7 +96,7 @@ export default function Portfolio(){
   </div>
   <SceneTools active={world} ready={ready} failed={failed} inspect={inspect} traveling={traveling} onView={()=>{setReady(false);setFailed(false);setSceneEpoch(value=>value+1)}} onReset={()=>setResetView(value=>value+1)} onViewAction={action=>setViewCommand(value=>({sequence:value.sequence+1,action}))} onInspect={()=>inspect?go(world,false,true,false):openWorld(world)}/>
   <PortfolioHeader active={active} menu={menu} onMenu={toggleMenu} reduced={reduced} onMotion={toggleMotion} onExplore={()=>openWorld(world)} buttonRef={menuButton} menuRef={menuPanel}/>
-  <PortfolioSections onProject={openProject} inspect={inspect}/>
+  <PortfolioSections onProject={openProject} inspect={inspect} active={world}/>
   <PortfolioFooter active={active} ready={ready} reduced={reduced} onMotion={toggleMotion} onMenu={toggleMenu} menu={menu}/>
   <ProjectDetails project={selected} dialogRef={dialog} onClose={closeProject}/>
  </div>;

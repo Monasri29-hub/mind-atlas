@@ -10,12 +10,12 @@ One renderer stays mounted while visitors read, scroll, change worlds, and enter
 
 The scene and reading region have separate viewport rectangles rather than allowing long panels to cross a fixed canvas:
 
-- Desktop: scrollable reading rail on the left; live 3D and a compact world toolbar on the right.
-- Phone/tablet portrait: live 3D above, toolbar in its own row, scrollable reading region below, destination navigator at the bottom.
+- Desktop: selected-world reading panel on the left; live 3D with small floating name and orbit controls on the right. The scene reaches the main header, with no extra toolbar strip.
+- Phone/tablet portrait: live 3D above with overlaid compact controls, selected-world reading region below, destination navigator at the bottom.
 - Small-screen landscape at 560px and above: side-by-side regions preserve useful reading height.
 - Orbit mode: the same renderer expands, the reading rail becomes inert/hidden, and Read details restores it. Reset and optional button-based orbit/zoom remain available.
 
-Scrolling the reading region changes the active world. Wheel gestures over the scene and vertical touch drags in browsing mode forward to the reading region. Orbit mode enables the actual drag/pinch camera controls. Direct navigation, URL fragments, keyboard focus, and return actions target the reading region. The reader is a named keyboard-focusable main landmark.
+Reading no longer changes the world or starts camera travel. Only the selected chapter is visible and keyboard-accessible; all five projects remain available together when Projects is selected. World navigation, island markers, and URL fragments select a destination and reset its reading panel to the top. Returning from orbit preserves the reading position. Native scrolling stays within the selected details and uses a subtle thumb without a contrasting scrollbar track. The scene no longer forwards wheel or touch gestures into the reader. Orbit mode retains its actual drag/pinch/zoom camera controls. The reader remains a named keyboard-focusable main landmark.
 
 Loading and WebGL failure states use text and a retry action, without substituting island illustrations. The readable portfolio remains available when rendering fails. The sky image is used only as atmosphere/reflection texture; all islands, buildings, landmarks, routes, and added details are mesh geometry.
 

@@ -34,9 +34,9 @@ export function PortfolioFooter({active,reduced,onMotion,onMenu,menu,ready}:{act
 }
 
 export function SceneTools({active,ready,failed,inspect=false,traveling,onView,onViewAction,onReset,onInspect}:{active:string;ready:boolean;failed:boolean;inspect?:boolean;traveling:boolean;onView:()=>void;onViewAction:(action:ViewAction)=>void;onReset:()=>void;onInspect:()=>void}){
- const name=sceneNames[active]??sceneNames.home,index=worlds.findIndex(w=>w[0]===active);
+ const name=sceneNames[active]??sceneNames.home;
  return <aside className="scene-tools" aria-label={`3D controls: ${name[0]}`}>
-  <div className="scene-heading"><span className="scene-kicker">{failed?'3D UNAVAILABLE':!ready?'OPENING 3D':traveling?'TRAVELLING':active==='home'?'08 CONNECTED WORLDS':`${String(index).padStart(2,'0')} / 08 · LIVE 3D`}</span><span className="scene-location">{name[0]}</span></div>
+  <div className="scene-heading"><span className="scene-state" aria-hidden="true" data-loading={!ready||traveling}/><span className="scene-location">{name[0]}</span></div>
   <div className="scene-controls">{failed?<button className="scene-explore" onClick={onView}>Retry 3D ↗</button>:<button className="scene-explore" onClick={onInspect} disabled={!ready&&!inspect} aria-pressed={inspect}>{inspect?'← Read details':'Orbit world ↗'}</button>}{inspect&&<button className="scene-reset" onClick={onReset} disabled={!ready}>Reset <span aria-hidden="true">↺</span></button>}</div>
   {inspect&&ready&&!failed&&<details className="view-adjustments"><summary>Adjust view</summary><p className="scene-instructions" id="orbit-help">Drag to orbit, pinch or scroll to zoom, or use the buttons below. Esc returns to the details.</p><div className="scene-orbit-controls" role="group" aria-label="Orbit and zoom controls" aria-describedby="orbit-help">{([['left','Orbit left'],['right','Orbit right'],['up','Look up'],['down','Look down'],['in','Zoom in'],['out','Zoom out']] as [ViewAction,string][]).map(([action,label])=><button key={action} onClick={()=>onViewAction(action)}>{label}</button>)}</div></details>}
   <span className="sr-only" role="status" aria-live="polite" aria-atomic="true">{failed?`3D is unavailable. Portfolio details remain readable.`:ready?(traveling?`Travelling to ${name[0]}.`:`${name[0]} ready.`):'Opening the live 3D world.'}</span>
