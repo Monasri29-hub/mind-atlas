@@ -46,6 +46,9 @@ for (const [i, d] of destinations.entries()) {
   const group = new T.Group(); group.position.set(...d.p);
   architecture.buildFloatingFoundation(group, d.r, d.id === 'projects' ? .72 : d.id === 'psychology' ? .8 : 1, i * 110 + 4);
   const built = builders[i](group); architecture.finishWorld(group,d.id,d.r); group.updateMatrixWorld(true);
+  const refinement=group.children.find(child=>child.userData.modeledDetail===d.id);
+  assert(refinement&&refinement.children.length>=3,`${d.id}: has purpose-specific modeled refinements`);
+  refinement.traverse(object=>{if(object.geometry)assert(!(object.geometry instanceof T.PlaneGeometry),`${d.id}: refinement uses 3D mesh geometry, not island pictures`)});
   allWorlds.push(group);
   const beforeBounds = new T.Box3().setFromObject(group, true);
   let originalObjects = 0;

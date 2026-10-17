@@ -66,12 +66,15 @@ export default function SkyScene(props:Props){
  });
 
  let pointerX=0,pointerY=0,desiredX=0,desiredY=0,hoverX=0,hoverY=0,hoverPending=false,pointerInside=false;
- const onPointer=(e:PointerEvent)=>{pointerInside=e.pointerType!=='touch';hoverX=e.clientX;hoverY=e.clientY;hoverPending=pointerInside;if(e.pointerType!=='touch'){desiredX=((e.clientX-rect.left)/rect.width-.5)*.45;desiredY=((e.clientY-rect.top)/rect.height-.5)*.2}wake()};
+ let touchY:number|null=null;
+ const onPointer=(e:PointerEvent)=>{pointerInside=e.pointerType!=='touch';hoverX=e.clientX;hoverY=e.clientY;hoverPending=pointerInside;if(e.pointerType==='touch'&&!current.current.inspect&&touchY!==null&&e.isPrimary){document.getElementById('journey')?.scrollBy({top:touchY-e.clientY,behavior:'instant'});touchY=e.clientY}else if(e.pointerType!=='touch'){desiredX=((e.clientX-rect.left)/rect.width-.5)*.45;desiredY=((e.clientY-rect.top)/rect.height-.5)*.2}wake()};
  const onLeave=()=>{pointerInside=false;desiredX=desiredY=0;canvas.current!.style.cursor='';wake()};
  canvas.current.addEventListener('pointerleave',onLeave);
  canvas.current.addEventListener('pointermove',onPointer,{passive:true});
  const ray=new T.Raycaster(),ndc=new T.Vector2();let startX=0,startY=0;
- const onDown=(e:PointerEvent)=>{startX=e.clientX;startY=e.clientY};
+ const onDown=(e:PointerEvent)=>{startX=e.clientX;startY=e.clientY;if(e.pointerType==='touch'&&!current.current.inspect&&e.isPrimary){touchY=e.clientY;canvas.current!.setPointerCapture(e.pointerId)}};
+ const onUp=()=>{touchY=null};
+ const onWheel=(e:WheelEvent)=>{if(current.current.inspect)return;const reader=document.getElementById('journey');if(!reader)return;e.preventDefault();reader.scrollBy({top:e.deltaY*(e.deltaMode===1?16:e.deltaMode===2?reader.clientHeight:1),behavior:'instant'})};
  function pick(x:number,y:number){
   ndc.set((x-rect.left)/rect.width*2-1,-(y-rect.top)/rect.height*2+1);ray.setFromCamera(ndc,camera);
   const hit=ray.intersectObjects(clickables,true).find(hit=>{let p:T.Object3D|null=hit.object;while(p){if(!p.visible)return false;p=p.parent}return true});
@@ -82,7 +85,7 @@ export default function SkyScene(props:Props){
   if(Math.hypot(e.clientX-startX,e.clientY-startY)>6||scrollTween?.isActive())return;
   const hit=pick(e.clientX,e.clientY);if(hit?.project)current.current.onProject(hit.project);else if(hit?.world)current.current.onWorld(hit.world);
  };
- canvas.current.addEventListener('pointerdown',onDown);canvas.current.addEventListener('click',onClick);
+ canvas.current.addEventListener('pointerdown',onDown);canvas.current.addEventListener('pointerup',onUp);canvas.current.addEventListener('pointercancel',onUp);canvas.current.addEventListener('wheel',onWheel,{passive:false});canvas.current.addEventListener('click',onClick);
  let last=0,elapsed=0,lastReduced=false;const v=new T.Vector3(),clock=new T.Clock();
  function wake(){dirty=true;if(!current.current.paused&&!document.hidden)loop.wake()}controls.addEventListener('change',wake);
  const onOrbitStart=()=>{scrollTween?.kill();current.current.onTravel(false);wake()};controls.addEventListener('start',onOrbitStart);
@@ -101,7 +104,7 @@ export default function SkyScene(props:Props){
    const sameView=Object.keys(next).every(key=>Math.abs(next[key as keyof typeof next]-origin[key as keyof typeof origin])<.001);
    if(reduced||!reportedReady||enteringInspection||sameView){Object.assign(flight,next);syncOrbitView(camera,controls,next);current.current.onTravel(false)}
    else{syncOrbitView(camera,controls,origin);const route=createCameraFlight(origin,next),progress={value:0};current.current.onTravel(true);scrollTween=gsap.to(progress,{value:1,duration:route.duration,ease:'power2.inOut',onUpdate:()=>{Object.assign(flight,route.sample(progress.value));wake()},onComplete:()=>{Object.assign(flight,next);if(inspect)syncOrbitView(camera,controls,next);hoverPending=true;current.current.onTravel(false);wake()}})}
-   controls.enabled=inspect;canvas.current!.style.touchAction=inspect?'none':'pan-y';lastWorld=world;lastInspect=inspect;lastReset=current.current.resetView;needsFraming=false;dirty=true;
+   controls.enabled=inspect;canvas.current!.style.touchAction='none';lastWorld=world;lastInspect=inspect;lastReset=current.current.resetView;needsFraming=false;dirty=true;
   }
   if(reduced!==lastReduced){if(reduced){const next=inspect&&!scrollTween?.isActive()?captureView(camera,controls.target):waypoint();scrollTween?.kill();Object.assign(flight,next);pointerX=pointerY=desiredX=desiredY=0;syncOrbitView(camera,controls,flight);current.current.onTravel(false)}dirty=true;lastReduced=reduced}
   if(current.current.viewCommand.sequence!==lastCommand){lastCommand=current.current.viewCommand.sequence;if(inspect){scrollTween?.kill();const next=adjustOrbit(captureView(camera,controls.target),current.current.viewCommand.action);Object.assign(flight,next);syncOrbitView(camera,controls,next);current.current.onTravel(false);dirty=true}}
@@ -140,11 +143,11 @@ export default function SkyScene(props:Props){
  const toolbarObserver=new ResizeObserver(()=>{measureToolbar();wake()});const toolbar=document.querySelector('.scene-tools');if(toolbar)toolbarObserver.observe(toolbar);
  const contextLost=(e:Event)=>{e.preventDefault();current.current.onFail()};
  canvasNode.addEventListener('webglcontextlost',contextLost);coarse.addEventListener('change',resize);syncActivity();
- return()=>{alive=false;loop.dispose();refresh.current=()=>{};document.removeEventListener('visibilitychange',syncActivity);coarse.removeEventListener('change',resize);scrollTween?.kill();ro.disconnect();toolbarObserver.disconnect();controls.removeEventListener('change',wake);controls.removeEventListener('start',onOrbitStart);controls.dispose();window.removeEventListener('resize',resize);canvasNode.removeEventListener('pointermove',onPointer);canvasNode.removeEventListener('pointerleave',onLeave);canvasNode.removeEventListener('pointerdown',onDown);canvasNode.removeEventListener('click',onClick);canvasNode.removeEventListener('webglcontextlost',contextLost);labelElements.forEach(e=>e.remove());
+ return()=>{alive=false;loop.dispose();refresh.current=()=>{};document.removeEventListener('visibilitychange',syncActivity);coarse.removeEventListener('change',resize);scrollTween?.kill();ro.disconnect();toolbarObserver.disconnect();controls.removeEventListener('change',wake);controls.removeEventListener('start',onOrbitStart);controls.dispose();window.removeEventListener('resize',resize);canvasNode.removeEventListener('pointermove',onPointer);canvasNode.removeEventListener('pointerleave',onLeave);canvasNode.removeEventListener('pointerdown',onDown);canvasNode.removeEventListener('pointerup',onUp);canvasNode.removeEventListener('pointercancel',onUp);canvasNode.removeEventListener('wheel',onWheel);canvasNode.removeEventListener('click',onClick);canvasNode.removeEventListener('webglcontextlost',contextLost);labelElements.forEach(e=>e.remove());
  const geometries=new Set<T.BufferGeometry>(),materials=new Set<T.Material>(),textures=new Set<T.Texture>();
  scene.traverse(o=>{if(o instanceof T.Mesh||o instanceof T.Line||o instanceof T.Sprite){if('geometry'in o)geometries.add(o.geometry);(Array.isArray(o.material)?o.material:[o.material]).forEach(m=>{materials.add(m);if('map'in m&&m.map instanceof T.Texture)textures.add(m.map)})}});
  geometries.forEach(g=>g.dispose());materials.forEach(m=>m.dispose());textures.forEach(t=>t.dispose());skyReflection.dispose();sunlight.shadow.dispose();renderer.dispose();};
  },[]);
  useEffect(()=>refresh.current(),[props.active,props.inspect,props.resetView,props.reduced,props.paused,props.viewCommand.sequence]);
- return <><canvas ref={canvas} className="sky-canvas" aria-label="Eight connected floating worlds, each with distinct architecture. Five projects share one Project Atelier. Use Explore in 3D to orbit; all portfolio details are available in the content panels." role="img"/><div ref={labels} className="island-labels"/></>
+ return <><canvas ref={canvas} className="sky-canvas" aria-label="Eight connected floating worlds, each with distinct architecture. Five projects share one Project Atelier. Scroll to travel through the worlds. Use Orbit world to inspect the geometry and Read details to return." role="img"/><div ref={labels} className="island-labels"/></>
 }

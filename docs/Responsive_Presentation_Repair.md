@@ -1,5 +1,7 @@
 # Responsive presentation repair
 
+**Superseded:** Mona rejected the illustrated browsing approach. The live Three.js experience has been restored and refined; see [Live 3D restoration](Live_3D_Restoration.md). This document records the removed experiment, not the current product.
+
 17 October 2026
 
 ## Why the previous arrangement changed

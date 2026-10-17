@@ -2,7 +2,7 @@
 
 **Kundeti Monasri’s portfolio — a connected universe of ideas, people, and intelligent systems.**
 
-A cinematic floating-island portfolio built with Next.js, React, TypeScript, Three.js, and GSAP. Eight distinct illustrated worlds introduce Monasri’s work alongside readable content. Every world opens a procedural interactive 3D viewer. Phones and tablets use naturally scrolling artwork/content sections; larger screens use a balanced two-column composition.
+A cinematic floating-island portfolio built with Next.js, React, TypeScript, Three.js, and GSAP. The live modeled universe is the main experience: eight distinct worlds connect Monasri’s interests and work. Scrollable reading panels and camera travel share one interface on desktop, tablet, and phone. Orbit controls expand the same scene for closer exploration.
 
 ![Floating sky-world concept artwork](public/sky-world.webp)
 
@@ -10,14 +10,14 @@ A cinematic floating-island portfolio built with Next.js, React, TypeScript, Thr
 
 ## Experience
 
-- Illustrated world exploration with on-demand 3D, cinematic camera travel, and connected sky routes.
+- Live Three.js worlds with scroll-driven camera travel and connected sky routes.
 - Eight worlds with different architecture, symbols, colors, and atmospheres.
 - Five project case studies with the problem, contribution, workflow, technologies, and outcome.
 - Opaque editorial reading panels, prominent world titles, and named destination navigation.
 - Project cards expose purpose, individual contribution, scope, and technologies before opening a case study.
 - Skills are connected to selected projects; participation, experience, communities, and goals have readable content blocks.
 - Keyboard-accessible project dialogs and six orbit/zoom buttons, with persistent motion preferences.
-- Consistent illustrated browsing on every device, with an explicit 3D entry and a safe return/fallback.
+- Separate scene/content viewport regions, compact controls, and readable loading/failure states.
 - Static export: no database, API keys, or paid model services required to run the portfolio.
 
 ## World architecture
@@ -34,15 +34,17 @@ All eight worlds are implemented as procedural, real-time Three.js environments:
 - **Technology — The Systems Nexus:** exposed cantilevered layers connecting data stores, model modules, application interfaces, and a visible infrastructure spine.
 - **Future — The Open Horizon:** solid crescent steps, a supported stylized Earth, and unfinished light routes toward higher studies, research, and global exploration.
 
-Scroll or select a chapter to explore its illustration and content. Choose **Explore in 3D** to open the interactive viewer; drag to orbit, pinch/scroll to zoom, or expand **Adjust view** for named buttons. World navigation travels between destinations within the viewer. Escape or **Return to portfolio** restores reading. Project exhibits open the same case studies as the project list.
+Scroll the details or choose a world to travel through the actual 3D universe. **Orbit world** enables drag/pinch exploration and expands the same scene; **Adjust view** exposes named camera buttons. **Read details** or Escape restores the reading region. Project exhibits open the same case studies as the project list.
 
-The browsing view directly uses the original world-identity illustrations, an expansive overview sky, and a new single-island Projects illustration. Interactive 3D uses procedural geometry and is a separate interpretation of that direction. Matching artwork remains available during viewer loading/failure. A GPU error boundary keeps failures isolated from readable HTML content.
+All islands, architecture, landmarks, routes, and refinements use actual mesh geometry. Concept artwork remains reference material and is not used as island cards. A GPU error boundary keeps rendering failures isolated from the readable content. Loading/failure states use text and retry controls rather than replacing the worlds with illustrations.
 
 Opaque static architecture is batched by material within each world. Animated objects, transparent surfaces, and project selection remain independent. Geometry checks verify the actual batched scene and instance transforms, chapter camera framing at six viewport shapes, overview framing and non-overlapping markers at seven scene sizes, complete route connectivity, and all five project selection targets. These checks also run in GitHub Actions.
 
 ## Layout and atmosphere repair
 
-The latest [responsive presentation repair](docs/Responsive_Presentation_Repair.md) supersedes the earlier fixed mobile stage. Every chapter now owns its artwork, caption, action, and reading panel. At 1100px and below these scroll together; larger screens use aligned columns. Normal reading has no fixed scene toolbar or canvas. The interactive viewer opens only when requested, and its controls reserve space above the camera frame. Existing content remains available for the later information pass.
+The [live 3D restoration](docs/Live_3D_Restoration.md) removes the rejected image-led experiment. Desktop uses a reading rail beside the live stage. Phone/tablet portrait uses a live stage, compact toolbar, and reading region in separate rows; small-screen landscape uses side-by-side regions. Content cannot scroll over the canvas or its controls. Existing content remains available for the later information pass.
+
+Every world also has new modeled details: cognitive memory lattices, volumetric AI interfaces, a five-bay gallery pergola, a cultural armillary, articulated fabrication arms, observatory instruments, service cabling, and future destination arches. These additions are material-batched with the existing architecture where possible.
 
 The sky background now remains visible after the renderer starts. A single responsive stylesheet replaces the accumulated layout overrides. Compact numbered beacons reveal world names on hover or keyboard focus; their positions avoid each other and the scene toolbar. The readable panels occupy less horizontal space, leaving a larger continuous 3D stage.
 

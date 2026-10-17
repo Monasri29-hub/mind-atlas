@@ -1,5 +1,6 @@
 import * as T from 'three';
 import {solidRibbon,arcTerrace} from './WorldForms.ts';
+import {refineWorld} from './WorldRefinement.ts';
 
 /** Shared materials, with a different architectural vocabulary for every world. */
 export type WorldAnimation = { object: T.Object3D; axis: 'y' | 'z'; speed: number };
@@ -25,6 +26,7 @@ const canopyGeometry=new T.IcosahedronGeometry(1,1),canopyMaterial=new T.MeshSta
 
 /** Complete the terraces with edge detailing, structural supports, and energy seams. */
 export function finishWorld(parent: T.Group, id: string, radius: number) {
+  refineWorld(parent,id);
   const colors:Record<string,string>={psychology:'#e494d5',ai:'#66dff7',projects:'#b5a3ed',culture:'#e8b579',hackathons:'#f2a278',research:'#b6a4e9',technology:'#7dd8c2',future:'#f2d5a0'};
   const light=new T.MeshBasicMaterial({color:colors[id],toneMapped:false});
   const halo=new T.MeshBasicMaterial({color:colors[id],transparent:true,opacity:.12,depthWrite:false,blending:T.AdditiveBlending,toneMapped:false});

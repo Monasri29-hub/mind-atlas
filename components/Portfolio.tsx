@@ -4,7 +4,6 @@ import dynamic from 'next/dynamic';
 import SceneBoundary from './SceneBoundary';
 import PortfolioSections,{ProjectDetails} from './PortfolioSections';
 import {PortfolioHeader,PortfolioFooter,SceneTools,worlds} from './PortfolioNavigation';
-import {WorldArtwork} from './WorldVisual';
 import {projects,type PortfolioProject} from '../data/portfolio';
 import type {ViewAction} from './CameraNavigation';
 
@@ -12,7 +11,7 @@ const SkyScene=dynamic(()=>import('./SkyScene'),{ssr:false});
 export default function Portfolio(){
  const [active,setActive]=useState(0),[reduced,setReduced]=useState(false),[menu,setMenu]=useState(false);
  const [selected,setSelected]=useState<PortfolioProject|null>(null),[ready,setReady]=useState(false),[failed,setFailed]=useState(false),[inspect,setInspect]=useState(false);
- const [preferencesReady,setPreferencesReady]=useState(false),[traveling,setTraveling]=useState(false),[resetView,setResetView]=useState(0);
+ const [sceneEpoch,setSceneEpoch]=useState(0),[preferencesReady,setPreferencesReady]=useState(false),[traveling,setTraveling]=useState(false),[resetView,setResetView]=useState(0);
  const [viewCommand,setViewCommand]=useState<{sequence:number;action:ViewAction}>({sequence:0,action:'left'});
  const focusFrame=useRef(0),dialog=useRef<HTMLDialogElement>(null),opener=useRef<HTMLElement|null>(null);
  const menuButton=useRef<HTMLButtonElement>(null),menuPanel=useRef<HTMLElement>(null),menuOpener=useRef<HTMLElement|null>(null);
@@ -22,7 +21,7 @@ export default function Portfolio(){
   const index=worlds.findIndex(w=>w[0]===id),section=document.getElementById(id);
   if(index<0||!section)return;
   setActive(index);setMenu(false);if(!keepInspect)setInspect(false);
-  section.scrollIntoView({behavior:'instant',block:'start'});
+  const reader=document.getElementById('journey');reader?.scrollTo({top:section.offsetTop-16,behavior:'instant'});
   if(record&&location.hash!==`#${id}`)history.pushState(null,'',`#${id}`);
   cancelAnimationFrame(focusFrame.current);
   if(focus&&!keepInspect)focusFrame.current=requestAnimationFrame(()=>section.focus({preventScroll:true}));
@@ -30,7 +29,7 @@ export default function Portfolio(){
 
  const openWorld=useCallback((id:string)=>{
   const index=worlds.findIndex(w=>w[0]===id);if(index<0)return;
-  if(!inspect||failed)setReady(false);
+  if(failed){setReady(false);setFailed(false);setSceneEpoch(value=>value+1)}
   setActive(index);setMenu(false);setFailed(false);setInspect(true);
   cancelAnimationFrame(focusFrame.current);
   focusFrame.current=requestAnimationFrame(()=>document.querySelector<HTMLElement>('.scene-explore')?.focus({preventScroll:true}));
@@ -50,11 +49,12 @@ export default function Portfolio(){
  },[go]);
  useEffect(()=>{
   if(inspect)return;let frame=0;
-  const chapters=Array.from(document.querySelectorAll<HTMLElement>('.chapter'));
-  const update=()=>{frame=0;let index=0;chapters.forEach((chapter,i)=>{if(chapter.getBoundingClientRect().top<=innerHeight*.3)index=i});setActive(index)};
+  const reader=document.getElementById('journey')!;
+  const chapters=Array.from(reader.querySelectorAll<HTMLElement>('.chapter'));
+  const update=()=>{frame=0;let index=0;chapters.forEach((chapter,i)=>{if(chapter.getBoundingClientRect().top<=reader.getBoundingClientRect().top+reader.clientHeight*.3)index=i});setActive(index)};
   const schedule=()=>{if(!frame)frame=requestAnimationFrame(update)};
-  schedule();window.addEventListener('scroll',schedule,{passive:true});window.addEventListener('resize',schedule);
-  return()=>{cancelAnimationFrame(frame);window.removeEventListener('scroll',schedule);window.removeEventListener('resize',schedule)};
+  schedule();reader.addEventListener('scroll',schedule,{passive:true});window.addEventListener('resize',schedule);
+  return()=>{cancelAnimationFrame(frame);reader.removeEventListener('scroll',schedule);window.removeEventListener('resize',schedule)};
  },[inspect]);
  useEffect(()=>{if(!selected){dialog.current?.close();return}if(!dialog.current?.open)dialog.current?.showModal()},[selected]);
  useEffect(()=>{
@@ -93,19 +93,19 @@ export default function Portfolio(){
  }
  function toggleMenu(){if(!menu)menuOpener.current=document.activeElement instanceof HTMLElement?document.activeElement:null;setMenu(value=>!value)}
  function toggleMotion(){const next=!reduced;setReduced(next);try{localStorage.setItem('mind-atlas-motion',next?'off':'on')}catch{}}
- function sceneFailure(){setReady(true);setFailed(true);setTraveling(false)}
+ function sceneFailure(){setReady(false);setFailed(true);setTraveling(false);setInspect(false)}
 
  return <div className={`portfolio${reduced?' reduced':''}${inspect?' inspecting':''}`} data-world={world} data-ready={ready&&!failed?'true':'false'} onClick={navigate}>
   <a className="skip" href="#projects">Skip to selected projects</a>
   <div className="sky-backdrop" aria-hidden="true"/>
-  {inspect&&<>
-   {(!ready||failed)&&<div className="inspector-fallback"><WorldArtwork world={world}/></div>}
-   {preferencesReady&&!failed&&<SceneBoundary onFail={sceneFailure}><SkyScene active={world} inspect={true} resetView={resetView} viewCommand={viewCommand} paused={menu||!!selected} reduced={reduced} onTravel={setTraveling} onReady={()=>setReady(true)} onFail={sceneFailure} onProject={openProject} onWorld={id=>go(id,true,false)}/></SceneBoundary>}
-   <SceneTools active={world} ready={ready} failed={failed} illustrated={false} inspect={true} traveling={traveling} onView={()=>openWorld(world)} onReset={()=>setResetView(value=>value+1)} onViewAction={action=>setViewCommand(value=>({sequence:value.sequence+1,action}))} onInspect={()=>go(world,false,true,false)} onWorld={id=>go(id,true,false)}/>
-  </>}
+  <div className="world-stage" aria-label="Live 3D floating world">
+   {(!ready||failed)&&<div className="scene-loading" role="status"><span className="loading-orbit" aria-hidden="true"/><strong>{failed?'3D could not start on this device.':'Building your view of the atlas…'}</strong><p>{failed?'Your portfolio details remain readable. Use Retry 3D to try again.':'Eight modeled worlds, connected above the clouds.'}</p></div>}
+   {preferencesReady&&!failed&&<SceneBoundary key={sceneEpoch} onFail={sceneFailure}><SkyScene active={world} inspect={inspect} resetView={resetView} viewCommand={viewCommand} paused={menu||!!selected} reduced={reduced} onTravel={setTraveling} onReady={()=>setReady(true)} onFail={sceneFailure} onProject={openProject} onWorld={id=>go(id,inspect,!inspect)}/></SceneBoundary>}
+  </div>
+  <SceneTools active={world} ready={ready} failed={failed} inspect={inspect} traveling={traveling} onView={()=>{setReady(false);setFailed(false);setSceneEpoch(value=>value+1)}} onReset={()=>setResetView(value=>value+1)} onViewAction={action=>setViewCommand(value=>({sequence:value.sequence+1,action}))} onInspect={()=>inspect?go(world,false,true,false):openWorld(world)}/>
   <PortfolioHeader active={active} menu={menu} onMenu={toggleMenu} reduced={reduced} onMotion={toggleMotion} onExplore={()=>openWorld(world)} buttonRef={menuButton} menuRef={menuPanel}/>
-  <PortfolioSections onProject={openProject} onExplore={openWorld} inspect={inspect}/>
-  <PortfolioFooter active={active} ready={true} reduced={reduced} onMotion={toggleMotion} onMenu={toggleMenu} menu={menu}/>
+  <PortfolioSections onProject={openProject} inspect={inspect}/>
+  <PortfolioFooter active={active} ready={ready} reduced={reduced} onMotion={toggleMotion} onMenu={toggleMenu} menu={menu}/>
   <ProjectDetails project={selected} dialogRef={dialog} onClose={closeProject}/>
  </div>;
 }
