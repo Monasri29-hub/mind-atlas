@@ -14,7 +14,7 @@ type Props={reduced:boolean;active:string;inspect:boolean;onReady:()=>void;onFai
 export default function SkyScene(props:Props){
  const canvas=useRef<HTMLCanvasElement>(null),labels=useRef<HTMLDivElement>(null),current=useRef(props);current.current=props;
  useEffect(()=>{if(!canvas.current)return;let renderer:T.WebGLRenderer;try{renderer=new T.WebGLRenderer({canvas:canvas.current,alpha:true,antialias:true,powerPreference:'high-performance'});}catch{current.current.onFail();return;}
- let alive=true,reportedReady=false;let mobile=innerWidth<=720;const coarse=matchMedia('(pointer: coarse)');const limited=()=>mobile||coarse.matches;const viewport=()=>canvas.current!.getBoundingClientRect();let rect=viewport();renderer.setPixelRatio(Math.min(devicePixelRatio,limited()?1.25:1.65));renderer.setSize(rect.width,rect.height,false);renderer.outputColorSpace=T.SRGBColorSpace;renderer.toneMapping=T.ACESFilmicToneMapping;renderer.toneMappingExposure=.95;
+ let alive=true,reportedReady=false;let mobile=innerWidth<=960;const coarse=matchMedia('(pointer: coarse)');const limited=()=>mobile||coarse.matches;const viewport=()=>canvas.current!.getBoundingClientRect();let rect=viewport();renderer.setPixelRatio(Math.min(devicePixelRatio,limited()?1.25:1.65));renderer.setSize(rect.width,rect.height,false);renderer.outputColorSpace=T.SRGBColorSpace;renderer.toneMapping=T.ACESFilmicToneMapping;renderer.toneMappingExposure=.95;
  const scene=new T.Scene();scene.fog=new T.Fog('#a7cee3',130,330);const camera=new T.PerspectiveCamera(SCENE_FOV,rect.width/rect.height,.2,400);
  const sunlight=new T.DirectionalLight('#fff0d9',3.1);sunlight.position.set(-35,65,35);sunlight.castShadow=true;sunlight.shadow.mapSize.set(2048,2048);sunlight.shadow.bias=-.0002;sunlight.shadow.normalBias=.035;sunlight.shadow.camera.near=.5;sunlight.shadow.camera.far=180;
  scene.add(sunlight,sunlight.target,new T.HemisphereLight('#e5f3ff','#5a7381',1.25));const rim=new T.DirectionalLight('#b8def2',.65);rim.position.set(35,18,-35);scene.add(rim);
@@ -110,11 +110,11 @@ export default function SkyScene(props:Props){
   }),rect.width,rect.height,markerObstacles);
   markers.forEach((p,i)=>{
    const el=labelElements[i];el.style.visibility=p.visible?'visible':'hidden';el.style.pointerEvents=p.visible?'auto':'none';
-   el.style.transform=`translate3d(${p.x+rect.left-18}px,${p.y+rect.top-18}px,0)`;
+   el.style.transform=`translate3d(${p.x+rect.left-22}px,${p.y+rect.top-22}px,0)`;
   });
 
  }
- const resize=()=>{mobile=innerWidth<=720;rect=viewport();camera.aspect=rect.width/rect.height;camera.updateProjectionMatrix();renderer.setPixelRatio(Math.min(devicePixelRatio,limited()?1.25:1.65));renderer.setSize(rect.width,rect.height,false);atmosphere.setLimited(limited());updateLighting();lastWorld='';dirty=true};
+ const resize=()=>{mobile=innerWidth<=960;rect=viewport();camera.aspect=rect.width/rect.height;camera.updateProjectionMatrix();renderer.setPixelRatio(Math.min(devicePixelRatio,limited()?1.25:1.65));renderer.setSize(rect.width,rect.height,false);atmosphere.setLimited(limited());updateLighting();lastWorld='';dirty=true};
  window.addEventListener('resize',resize);const canvasNode=canvas.current;
  const ro=new ResizeObserver(resize);ro.observe(canvasNode);
  const toolbarObserver=new ResizeObserver(()=>{measureToolbar();dirty=true});const toolbar=document.querySelector('.scene-tools');if(toolbar)toolbarObserver.observe(toolbar);

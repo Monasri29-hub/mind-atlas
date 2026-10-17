@@ -13,7 +13,9 @@ A cinematic floating-island portfolio built with Next.js, React, TypeScript, Thr
 - Scroll-driven exploration with cinematic camera movement and connected sky routes.
 - Eight worlds with different architecture, symbols, colors, and atmospheres.
 - Five project case studies with the problem, contribution, workflow, technologies, and outcome.
-- Prominent section headings, supported text panels, and responsive navigation.
+- Opaque editorial reading panels, prominent world titles, and named destination navigation.
+- Project cards expose purpose, individual contribution, scope, and technologies before opening a case study.
+- Skills are connected to selected projects; participation, experience, communities, and goals have readable content blocks.
 - Keyboard-accessible project dialogs, reduced-motion support, and a manual motion toggle.
 - Illustrated fallback when WebGL is unavailable.
 - Static export: no database, API keys, or paid model services required to run the portfolio.
@@ -67,6 +69,14 @@ All eight worlds now have revised architectural silhouettes, with solid sculptur
 The new band and terrace geometries are closed volumes, with consistent surface winding checked before batching. Project selection is tested through the actual chapter camera against the full gallery: every exhibit must have a visible selectable surface rather than merely intersecting a ray aimed at an empty bounding-box center. All nine fallback images have been regenerated from the changed world geometry.
 
 These are procedural architectural interpretations of the Phase 1 art direction, not a claim of pixel-identical reproduction. CPU stills help assess silhouette and composition; live materials, shadows, orbit interactions, and device performance require a WebGL-capable browser review. See [the Phase 3 implementation notes](docs/Phase_3_World_Identity.md). Phase 4 addresses the editorial content panels and scan-friendly portfolio UI.
+
+### Phase 4 — readable professional portfolio UI
+
+The introduction now identifies Monasri, her AI/ML focus, education, and selected-work action immediately. All eight worlds use opaque ivory reading surfaces, clearer editorial titles, larger supporting text, and theme colors with checked text contrast. Five project cards separate purpose, contribution, and scope/output, with a distinct case-study action. The complete case studies retain their workflow, technology, contribution, and output details.
+
+Technology cards connect methods and tools to actual selected projects. Hackathon participation, selected building roles, community membership, creative achievement, and future goals have dedicated content blocks. Desktop navigation shows destination names; smaller screens use a previous/current/next bar and a keyboard-accessible world directory. The scene controls are compact, and map beacons have 44px targets. At 960px and below, reading panels sit beneath the reserved sky stage.
+
+Static HTML and component-rendering checks cover nine sections, five cards and full case-study dialogs, valid headings and internal/ARIA references, named controls, profile links, and theme contrast. These checks do not constitute a full accessibility audit or live browser review. See [the Phase 4 implementation notes](docs/Phase_4_Readable_UI.md).
 
 | World | Visual identity | Portfolio focus |
 | --- | --- | --- |
@@ -124,6 +134,8 @@ Run `npm run build` before `npm start`. No environment variables are needed.
 | `app/layout.tsx` | Document structure and metadata |
 | `app/globals.css` | Responsive styling, content panels, and motion preferences |
 | `components/Portfolio.tsx` | Sections, navigation, project dialogs, and readable content |
+| `components/PortfolioSections.tsx` | Editorial reading panels, project cards, contextual skill blocks, and case-study dialogs |
+| `components/PortfolioNavigation.tsx` | Named world navigation, professional header, mobile travel bar, and compact scene controls |
 | `components/SkyScene.tsx` | Procedural Three.js worlds and camera behavior |
 | `components/WorldArchitecture.ts` | Shared materials and eight distinct world builders |
 | `components/WorldForms.ts` | Closed sculptural ribbons and solid arc terraces |

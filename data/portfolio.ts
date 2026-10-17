@@ -8,3 +8,22 @@ export const projects = [
 export const experience=[['Sep 2026 — Present','AI/ML Intern','VRITTIFY AI','Remote · Hyderabad'],['Aug 2026 — Present','Machine Learning Intern','Learn Depth','Internship'],['Jan — Mar 2026','Open Source Developer','Social Winter of Code & Elite Coders','Open-source programs'],['Jun — Aug 2025','Artificial Intelligence Intern','Edunet Foundation','Employee salary prediction with Python and Streamlit']];
 export const skills=[['AI & machine learning','Scikit-learn · Computer vision · Feature engineering · Model evaluation'],['Intelligent applications','Ollama · Stable Diffusion · ControlNet · Prompt engineering'],['Software & data','Python · JavaScript · Flask · Django · SQL · PostgreSQL'],['Tools for building','OpenCV · MediaPipe · Git · GitHub · Supabase · Vercel']];
 export const archive=[['KitchenWhiz','Serverless meal planning with an AI assistant, pantry persistence, and row-level security.'],['GlobalGrad AI','Profile-based discovery of fully funded master’s scholarships.'],['SupportDesk','TF-IDF ticket classification, urgency detection, and routing with Flask and SQLite.'],['CodeQuant','A Python console application estimating algorithmic complexity.'],['BlogBook','Django blogging with authentication and personal post management.'],['Employee Salary Prediction','Python and Streamlit classification application developed during the Edunet internship.']];
+
+export type PortfolioProject=(typeof projects)[number];
+/** Concise presentation of the existing case-study facts; full detail remains in each project. */
+export const projectHighlights:Record<string,{contribution:string;output:string}>={
+ emotispace:{contribution:'Connected emotion analysis, design logic, and generated visuals for personalized room recommendations.',output:'A room recommendation concept shaped around emotional and individual needs.'},
+ signspell:{contribution:'Built landmark normalization, a 250-tree Random Forest classifier, and stable text buffering.',output:'An end-to-end webcam application for ASL fingerspelling and text construction.'},
+ news:{contribution:'Built news retrieval, local-LLM summarization, digest assembly, and scheduled email delivery.',output:'A scheduled news-to-email workflow using local model inference.'},
+ benchmark:{contribution:'Designed 100 synthetic tasks, example prompts, response capture, and exact-match scoring.',output:'A structured benchmark pipeline for exploring generalization.'},
+ culture:{contribution:'Created AI-generated artifact interpretations with Stable Diffusion and ControlNet.',output:'15 creative interpretations exploring art, philosophy, and cultural memory.'}
+};
+export const hackathonEvents=[
+ {name:'Nationwide Ideathon',organization:'IIT Patna',date:'September 2025',status:'Participant'},
+ {name:'DevDual',organization:'Elan & nVision, IIT Hyderabad',date:'December 2025',status:'Participant'},
+ {name:'DeVQueens',organization:'Hackathon',date:'April 2026',status:'Participant'}
+];
+export const communities=[
+ {name:'Cohere community',detail:'Member · September 2026–present'},
+ {name:'Rewriting The Code',detail:'Member · June 2026–present'}
+];
