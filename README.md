@@ -23,14 +23,14 @@ A cinematic floating-island portfolio built with Next.js, React, TypeScript, Thr
 All eight worlds are implemented as procedural, real-time Three.js environments:
 
 - **Shared foundation:** pearl and stone architecture, irregular floating rock, layered cloud sprites, walkable cyan/pink sky bridges, and an airy daylight palette.
-- **Psychology — The Mind Garden:** a neural human silhouette, two flowing terrace paths, a reflection pool, suspended memory fragments, and emotion lights.
-- **AI — The Intelligence Nexus:** structured glass laboratory towers, a suspended polyhedral core, three supporting rings, a separate knowledge graph, and four ordered model stations.
-- **Projects — The Project Atelier:** one continuous gallery, one floating island, and five selectable exhibits.
+- **Psychology — The Mind Garden:** a human profile built from 25 solid contour ribbons, neural connections, flowing arches, a reflection pool, four suspended memory fragments, and emotion lights.
+- **AI — The Intelligence Nexus:** split tapered laboratory towers, a suspended inference engine, three tilted gimbals, a separate knowledge graph, and four ordered model stations.
+- **Projects — The Project Atelier:** one continuous exhibition floor, a curved shared gallery spine, five purpose-specific bays, and an open-folio courtyard.
 - **Culture — The Cultural Crossroads:** a woven performance pavilion, stepped amphitheatre, warm art folios, acoustic waves, and a suspended connection lantern.
-- **Hackathons — The Invention Yard:** an asymmetric braced gantry, a kinetic prototype, three working benches, supply modules, and a challenge board.
-- **Research — The Observatory:** an offset glass dome and telescope, a tilted celestial atlas, sparse knowledge clusters, and a quiet reading terrace.
-- **Technology — The Systems Nexus:** an exposed three-level system connecting data stores, model modules, application interfaces, and visible infrastructure risers.
-- **Future — The Open Horizon:** an open crescent terrace, a stylized Earth, and unfinished light routes toward higher studies, research, and global exploration.
+- **Hackathons — The Invention Yard:** a rising asymmetrical truss, a suspended four-rotor prototype, three working benches, supply modules, and a challenge board.
+- **Research — The Observatory:** an open-slit dome and visible telescope, a calibrated celestial atlas, sparse knowledge clusters, and a quiet reading terrace.
+- **Technology — The Systems Nexus:** exposed cantilevered layers connecting data stores, model modules, application interfaces, and a visible infrastructure spine.
+- **Future — The Open Horizon:** solid crescent steps, a supported stylized Earth, and unfinished light routes toward higher studies, research, and global exploration.
 
 Scroll or select a chapter to fly to its world. Choose **Explore in 3D** to drag to orbit and pinch or scroll to zoom. Use the world buttons to travel between all eight worlds; press Escape or **Return to portfolio** to resume reading. Project exhibits open the same accessible case-study dialogs as the project list.
 
@@ -58,7 +58,15 @@ Warm directional light, cool sky fill, and chapter-focused desktop shadow maps s
 
 Sky bridges now attach to the actual elliptical or rectangular deck footprints and include landing sills and small guide lights. Six railed walkways and three energy routes preserve the nine-link network. The fixed transit architecture is batched into 11 mesh draws, with moving signals kept separate. All nine transparent loading/failure stills were regenerated from the updated geometry.
 
-This is the environment foundation pass. The individual landmark redesigns from the Phase 1 concept drawings belong to Phase 3; the procedural worlds are not claimed to reproduce those drawings yet. See [the Phase 2 implementation notes](docs/Phase_2_Environment.md).
+This was the shared environment foundation pass. See [the Phase 2 implementation notes](docs/Phase_2_Environment.md).
+
+### Phase 3 — distinct world landmarks
+
+All eight worlds now have revised architectural silhouettes, with solid sculptural bands, stepped terraces, an open five-bay exhibition, a warm woven pavilion, an angular prototype yard, an observatory, exposed computing layers, and a quiet global horizon. Garden trees have branched trunks and instanced clustered canopies. The Projects world remains one island containing all five existing case studies.
+
+The new band and terrace geometries are closed volumes, with consistent surface winding checked before batching. Project selection is tested through the actual chapter camera against the full gallery: every exhibit must have a visible selectable surface rather than merely intersecting a ray aimed at an empty bounding-box center. All nine fallback images have been regenerated from the changed world geometry.
+
+These are procedural architectural interpretations of the Phase 1 art direction, not a claim of pixel-identical reproduction. CPU stills help assess silhouette and composition; live materials, shadows, orbit interactions, and device performance require a WebGL-capable browser review. See [the Phase 3 implementation notes](docs/Phase_3_World_Identity.md). Phase 4 addresses the editorial content panels and scan-friendly portfolio UI.
 
 | World | Visual identity | Portfolio focus |
 | --- | --- | --- |
@@ -118,6 +126,7 @@ Run `npm run build` before `npm start`. No environment variables are needed.
 | `components/Portfolio.tsx` | Sections, navigation, project dialogs, and readable content |
 | `components/SkyScene.tsx` | Procedural Three.js worlds and camera behavior |
 | `components/WorldArchitecture.ts` | Shared materials and eight distinct world builders |
+| `components/WorldForms.ts` | Closed sculptural ribbons and solid arc terraces |
 | `components/FloatingFoundation.ts` | Closed weathered rock strata, outcrops, and planted cliff edges |
 | `components/SkyEnvironment.ts` | Shaded cloud texture, near/horizon cloud layers, and distant settlements |
 | `components/SkyRoutes.ts` | Deck-aware arrival points, railed sky bridges, and moving transit signals |

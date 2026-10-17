@@ -4,6 +4,7 @@ import { destinations, connections, SCENE_FOV, placeMarkers } from '../component
 import * as architecture from '../components/WorldArchitecture.ts';
 import { batchWorld } from '../components/SceneBatch.ts';
 import { frameObjects } from '../components/SceneFraming.ts';
+import {solidRibbon,arcTerrace} from '../components/WorldForms.ts';
 
 // The geometry is renderer-independent. Labels receive a minimal offscreen canvas.
 globalThis.document = { createElement: () => ({ width: 512, height: 112, getContext: () => ({ fillRect() {}, fillText() {} }) }) };
@@ -18,6 +19,18 @@ for (let pass = 0; pass < destinations.length; pass++) for (const [a, b] of conn
 assert.equal(visited.size, 8, 'Every world must be reachable through the sky network');
 const expectedProjects = ['emotispace', 'signspell', 'news', 'benchmark', 'culture'];
 const ray = new T.Raycaster();
+// Check closed architectural bands and terraces before they are batched into the worlds.
+const forms=new T.Group(),material=new T.MeshBasicMaterial();
+solidRibbon(forms,[new T.Vector3(-1,0,0),new T.Vector3(0,2,0),new T.Vector3(1,0,0)],.2,.08,material,32,new T.Vector3(0,0,1));
+arcTerrace(forms,1,2,.3,.15,.1,Math.PI*1.4,material,32);
+forms.traverse(o=>{if(!o.geometry)return;const g=o.geometry,p=g.getAttribute('position'),edges=new Map();
+ for(let i=0;i<g.index.count;i+=3){const triangle=[g.index.getX(i),g.index.getX(i+1),g.index.getX(i+2)];
+  const a=new T.Vector3().fromBufferAttribute(p,triangle[0]),b=new T.Vector3().fromBufferAttribute(p,triangle[1]),c=new T.Vector3().fromBufferAttribute(p,triangle[2]);
+  assert(b.sub(a).cross(c.sub(a)).lengthSq()>1e-10,'Architectural forms have no degenerate faces');
+  for(let j=0;j<3;j++){const a=triangle[j],b=triangle[(j+1)%3],key=[Math.min(a,b),Math.max(a,b)].join(':');const edge=edges.get(key)??{count:0,direction:0};edge.count++;edge.direction+=a<b?1:-1;edges.set(key,edge)}
+ }
+ assert([...edges.values()].every(e=>e.count===2&&e.direction===0),'Architectural forms are closed with consistent winding');g.dispose();
+});material.dispose();
 const allWorlds=[];
 for (const [i, d] of destinations.entries()) {
   const group = new T.Group(); group.position.set(...d.p);
@@ -45,10 +58,18 @@ for (const [i, d] of destinations.entries()) {
     assert(Number.isFinite(a.speed));
   }
   assert.deepEqual(built.exhibits.map(e => e.userData.project), d.id === 'projects' ? expectedProjects : [], `${d.id}: one world holds all five project exhibits`);
-  for (const exhibit of built.exhibits) {
-    const bounds = new T.Box3().setFromObject(exhibit), center = bounds.getCenter(new T.Vector3());
-    ray.set(center.clone().add(new T.Vector3(0, 0, 10)), new T.Vector3(0, 0, -1));
-    assert(ray.intersectObject(exhibit, true).length > 0, `${exhibit.userData.project}: selectable exhibit`);
+  if(built.exhibits.length){
+   const view=frameObjects([group],d.id,1.3),camera=new T.PerspectiveCamera(SCENE_FOV,1.3,.2,400);camera.position.set(view.x,view.y,view.z);camera.lookAt(view.lx,view.ly,view.lz);camera.updateMatrixWorld(true);
+   for(const exhibit of built.exhibits){
+    // Open pavilions have empty bounding-box centers. Test actual visible surfaces through the real chapter camera.
+    let reachable=false;exhibit.traverse(o=>{if(reachable||!o.geometry)return;const p=o.geometry.getAttribute('position');
+     for(let j=0;j<p.count&&!reachable;j+=Math.max(1,Math.floor(p.count/12))){
+      const point=new T.Vector3().fromBufferAttribute(p,j).applyMatrix4(o.matrixWorld).project(camera);ray.setFromCamera(new T.Vector2(point.x,point.y),camera);
+      const hit=ray.intersectObject(group,true)[0];let target=hit?.object;while(target&&!target.userData.project)target=target.parent;
+      reachable=target?.userData.project===exhibit.userData.project;
+     }
+    });assert(reachable,`${exhibit.userData.project}: selectable from the actual chapter camera without another exhibit blocking it`);
+   }
   }
   for (const aspect of [.72, 1.3, 2.5]) {
     const view = frameObjects([group],d.id,aspect), camera = new T.PerspectiveCamera(SCENE_FOV, aspect, .2, 400);
