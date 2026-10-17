@@ -78,6 +78,12 @@ Technology cards connect methods and tools to actual selected projects. Hackatho
 
 Static HTML and component-rendering checks cover nine sections, five cards and full case-study dialogs, valid headings and internal/ARIA references, named controls, profile links, and theme contrast. These checks do not constitute a full accessibility audit or live browser review. See [the Phase 4 implementation notes](docs/Phase_4_Readable_UI.md).
 
+### Phase 5 — cinematic travel and interaction
+
+Each world has a deliberate arrival angle fitted to its actual geometry. Direct links select their destination once, expose its content immediately, and animate the camera along a short eased route. Normal scrolling remains chapter-driven. Inspection preserves the current pose, supports reset view, and keeps its viewpoint during resize. Pointer movement eases gently; travelling feedback and reduced-motion handling keep navigation predictable.
+
+Camera checks cover preset/orbit handoffs, opposite viewing directions, flight continuity, interruption, and pivot clearance. Eight regenerated fallback views match the new arrivals. Live browser and device verification remains outstanding. See [the Phase 5 implementation notes](docs/Phase_5_Cinematic_Travel.md).
+
 | World | Visual identity | Portfolio focus |
 | --- | --- | --- |
 | Psychology | Neural forms, thought pathways, soft emotional light | Human behavior, cognition, and human-centered design |

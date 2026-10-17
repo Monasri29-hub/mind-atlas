@@ -3,7 +3,9 @@ import {SCENE_FOV} from './WorldCatalog.ts';
 
 /** Fit the actual geometry, including instances, instead of an oversized island box. */
 export function frameObjects(objects:T.Object3D[],id:string,aspect:number){
- const direction=new T.Vector3(...(id==='home'?[.16,.34,1]:[.43,.3,1]) as [number,number,number]).normalize();
+ // Keep each landmark's readable front, with a deliberate angle for its architecture.
+ const arrivals:Record<string,[number,number,number]>={home:[.16,.34,1],psychology:[.18,.22,1],ai:[.55,.34,1],projects:[.12,.48,1],culture:[-.32,.4,1],hackathons:[.6,.42,1],research:[-.24,.3,1],technology:[.55,.45,1],future:[.08,.26,1]};
+ const direction=new T.Vector3(...(arrivals[id]??arrivals.home)).normalize();
  const right=new T.Vector3().crossVectors(new T.Vector3(0,1,0),direction).normalize();
  const up=new T.Vector3().crossVectors(direction,right).normalize();
  const min=new T.Vector3(Infinity,Infinity,Infinity),max=new T.Vector3(-Infinity,-Infinity,-Infinity);
