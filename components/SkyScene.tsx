@@ -55,7 +55,7 @@ export default function SkyScene(props:Props){
  const overview=waypoint();const target=new T.Vector3(overview.lx,overview.ly,overview.lz);syncOrbitView(camera,controls,overview);
  let dirty=true,lastWorld='',lastInspect=false,lastReset=props.resetView,needsFraming=false,lastCommand=props.viewCommand.sequence;
  let markerObstacles:{left:number;top:number;right:number;bottom:number}[]=[];
- const measureToolbar=()=>{markerObstacles=Array.from(document.querySelectorAll('.scene-heading,.scene-controls,.scene-destinations')).map(el=>{const r=el.getBoundingClientRect();return {left:r.left-rect.left-8,top:r.top-rect.top-8,right:r.right-rect.left+8,bottom:r.bottom-rect.top+8}})};
+ const measureToolbar=()=>{markerObstacles=Array.from(document.querySelectorAll('.scene-heading,.scene-controls,.view-adjustments[open]')).map(el=>{const r=el.getBoundingClientRect();return {left:r.left-rect.left-8,top:r.top-rect.top-8,right:r.right-rect.left+8,bottom:r.bottom-rect.top+8}})};
  let scrollTween:gsap.core.Tween|undefined;
  const flight={x:overview.x,y:overview.y,z:overview.z,lx:overview.lx,ly:overview.ly,lz:overview.lz};
  const labelElements=destinations.map((d,i)=>{

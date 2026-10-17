@@ -1,4 +1,5 @@
 import {memo,type RefObject} from 'react';
+import WorldVisual from './WorldVisual';
 import {projects,projectHighlights,hackathonEvents,communities,experience,archive,type PortfolioProject} from '../data/portfolio';
 
 type ProjectAction={onProject:(id:string)=>void};
@@ -23,28 +24,31 @@ function ProjectCard({project,onProject}:ProjectAction&{project:PortfolioProject
  </article>;
 }
 
-const PortfolioSections=memo(function PortfolioSections({onProject,inspect=false}:ProjectAction&{inspect?:boolean}){
+const PortfolioSections=memo(function PortfolioSections({onProject,onExplore,inspect=false}:ProjectAction&{onExplore:(id:string)=>void;inspect?:boolean}){
  return <main id="journey" inert={inspect} aria-hidden={inspect?true:undefined}>
-  <section id="home" className="chapter hero" aria-labelledby="home-title" tabIndex={-1}>
+  <section id="home" data-world="home" className="chapter hero" aria-labelledby="home-title" tabIndex={-1}>
+   <WorldVisual world="home" onExplore={onExplore}/>
    <article className="hero-content reading-panel">
     <p className="eyebrow">KUNDETI MONASRI · HYDERABAD</p>
     <h1 id="home-title"><span>Hi, I’m</span> Monasri.</h1>
-    <p className="hero-role">AI & ML student.<br/>Human-centered builder.</p>
+    <p className="hero-role">AI & ML.<br/>Built around people.</p>
     <p className="hero-description">I build intelligent systems around human needs, from accessible computer vision to local-LLM workflows.</p>
     <SkillTags items={['AI & machine learning','Human-centered design','Generative AI']}/>
     <div className="hero-actions"><a className="button button-primary" href="#projects">View selected projects <span aria-hidden="true">↗</span></a><a className="button button-secondary" href="#psychology">Explore the worlds <span aria-hidden="true">↓</span></a></div>
     <div className="education-summary"><p className="content-label">Education</p><strong>MGIT, Hyderabad</strong><p>B.Tech · AI & ML · 2024–2028</p><span className="education-result">9.05 / 10 <span>CGPA</span></span></div>
    </article>
   </section>
-  <section id="psychology" className="chapter" aria-labelledby="psychology-title" tabIndex={-1}>
+  <section id="psychology" data-world="psychology" className="chapter" aria-labelledby="psychology-title" tabIndex={-1}>
+   <WorldVisual world="psychology" onExplore={onExplore}/>
    <article className="chapter-content reading-panel">
     <SectionHeading number="01" topic="PSYCHOLOGY" title="The Mind Garden" lead="Understanding people. Designing with intention." id="psychology-title"/>
-    <p>I’m interested in emotion, personality, and how people interact with the spaces and intelligent systems around them.</p>
+    <p>Exploring emotion, personality, and human-centered interaction through the systems I build.</p>
     <SkillTags items={['Psychology','HCI','Human-centered design']}/>
     <FeaturedProject id="emotispace" onProject={onProject}/>
    </article>
   </section>
-  <section id="ai" className="chapter" aria-labelledby="ai-title" tabIndex={-1}>
+  <section id="ai" data-world="ai" className="chapter" aria-labelledby="ai-title" tabIndex={-1}>
+   <WorldVisual world="ai" onExplore={onExplore}/>
    <article className="chapter-content reading-panel">
     <SectionHeading number="02" topic="ARTIFICIAL INTELLIGENCE" title="Intelligence Nexus" lead="From a useful model to a working system." id="ai-title"/>
     <p>My work connects computer vision, local language models, and model evaluation with practical interactions.</p>
@@ -56,16 +60,18 @@ const PortfolioSections=memo(function PortfolioSections({onProject,inspect=false
     <a className="text-action" href="#technology">Explore the systems behind my work <span aria-hidden="true">↓</span></a>
    </article>
   </section>
-  <section id="projects" className="chapter projects-chapter" aria-labelledby="projects-title" tabIndex={-1}>
+  <section id="projects" data-world="projects" className="chapter projects-chapter" aria-labelledby="projects-title" tabIndex={-1}>
+   <WorldVisual world="projects" onExplore={onExplore}/>
    <article className="chapter-content reading-panel">
-    <SectionHeading number="03" topic="SELECTED PROJECTS" title="The Project Atelier" lead="Five projects. Clear purpose. Individual contributions." id="projects-title"/>
-    <p>Explore what each project does, what I contributed, and the scope of its output.</p>
+    <SectionHeading number="03" topic="SELECTED PROJECTS" title="The Project Atelier" lead="Ideas, built into working systems." id="projects-title"/>
+    <p>A closer look at the questions, decisions, and systems behind my work.</p>
     <p className="gallery-note"><span aria-hidden="true">↗</span> One connected island. Five distinct exhibits.</p>
     <div className="project-list">{projects.map(project=><ProjectCard key={project.id} project={project} onProject={onProject}/>)}</div>
     <details className="archive"><summary>More experiments <span aria-hidden="true">＋</span></summary>{archive.map(([title,description])=><div key={title}><h3>{title}</h3><p>{description}</p></div>)}</details>
    </article>
   </section>
-  <section id="culture" className="chapter" aria-labelledby="culture-title" tabIndex={-1}>
+  <section id="culture" data-world="culture" className="chapter" aria-labelledby="culture-title" tabIndex={-1}>
+   <WorldVisual world="culture" onExplore={onExplore}/>
    <article className="chapter-content reading-panel">
     <SectionHeading number="04" topic="CULTURE & CREATIVITY" title="Cultural Crossroads" lead="Art, music, movement, and human connection." id="culture-title"/>
     <p>Classical dance, writing, music, and cultural exploration shape the way I approach human experience and design.</p>
@@ -73,7 +79,8 @@ const PortfolioSections=memo(function PortfolioSections({onProject,inspect=false
     <div className="achievement-card"><p className="content-label">Creative milestone · 2019</p><h3>Natya Kaustubh Award</h3><p>Classical dance · Mahathi Arts Academy</p></div>
    </article>
   </section>
-  <section id="hackathons" className="chapter" aria-labelledby="hackathons-title" tabIndex={-1}>
+  <section id="hackathons" data-world="hackathons" className="chapter" aria-labelledby="hackathons-title" tabIndex={-1}>
+   <WorldVisual world="hackathons" onExplore={onExplore}/>
    <article className="chapter-content reading-panel">
     <SectionHeading number="05" topic="HACKATHONS & BUILDING" title="The Invention Yard" lead="Experiment. Collaborate. Build." id="hackathons-title"/>
     <p>Hackathons and ideathons give me a place to turn questions into experiments with other builders.</p>
@@ -82,7 +89,8 @@ const PortfolioSections=memo(function PortfolioSections({onProject,inspect=false
     <details className="archive"><summary>Other experience <span aria-hidden="true">＋</span></summary>{experience.slice(2).map(([date,title,org,detail])=><div key={org}><p className="content-label">{date}</p><h3>{title} · {org}</h3><p>{detail}</p></div>)}</details>
    </article>
   </section>
-  <section id="research" className="chapter" aria-labelledby="research-title" tabIndex={-1}>
+  <section id="research" data-world="research" className="chapter" aria-labelledby="research-title" tabIndex={-1}>
+   <WorldVisual world="research" onExplore={onExplore}/>
    <article className="chapter-content reading-panel">
     <SectionHeading number="06" topic="RESEARCH & COMMUNITY" title="The Observatory" lead="How do intelligent systems learn and generalize?" id="research-title"/>
     <p>I explore rule learning, compositional reasoning, few-shot adaptation, memory, and feedback through an experimental learning benchmark.</p>
@@ -90,17 +98,19 @@ const PortfolioSections=memo(function PortfolioSections({onProject,inspect=false
     <div className="community-block"><h3 className="block-heading">Learning in community</h3>{communities.map(community=><article className="community-card" key={community.name}><h4>{community.name}</h4><p>{community.detail}</p></article>)}</div>
    </article>
   </section>
-  <section id="technology" className="chapter" aria-labelledby="technology-title" tabIndex={-1}>
+  <section id="technology" data-world="technology" className="chapter" aria-labelledby="technology-title" tabIndex={-1}>
+   <WorldVisual world="technology" onExplore={onExplore}/>
    <article className="chapter-content reading-panel">
     <SectionHeading number="07" topic="TECHNOLOGY & SKILLS" title="The Systems Nexus" lead="Tools connected to the systems I build." id="technology-title"/>
-    <p>My strongest technologies make more sense in the context of the work they enable.</p>
+    <p>The languages, models, and tools behind my selected work.</p>
     <div className="system-list">{[
      ['signspell','Computer vision & interaction'],['news','Local LLMs & automation'],['benchmark','Evaluation & reasoning'],['culture','Generative visual systems']
     ].map(([id,title])=>{const project=projects.find(p=>p.id===id)!;return <article className="system-card" key={id}><h3>{title}</h3><p className="system-context">Used in {project.title}</p><SkillTags items={project.tech}/><button className="text-action" onClick={()=>onProject(id)} aria-label={`See ${project.title} case study`}>See the system <span aria-hidden="true">↗</span></button></article>})}</div>
     <details className="archive"><summary>Selected learning <span aria-hidden="true">＋</span></summary><div><h3>CS50’s Introduction to Programming with Python</h3><p>Harvard University · July 2026</p><h3>Code in Place</h3><p>Stanford program · June 2026</p><h3>Programming Essentials in Python & Django</h3><p>TASK · March 2026</p><h3>Python for Data Science, AI & Development</h3><p>IBM · March 2025</p></div></details>
    </article>
   </section>
-  <section id="future" className="chapter future" aria-labelledby="future-title" tabIndex={-1}>
+  <section id="future" data-world="future" className="chapter future" aria-labelledby="future-title" tabIndex={-1}>
+   <WorldVisual world="future" onExplore={onExplore}/>
    <article className="chapter-content reading-panel">
     <SectionHeading number="08" topic="THE NEXT CHAPTER" title="The Open Horizon" lead="From Hyderabad, with curiosity." id="future-title"/>
     <p>I’m looking toward higher education, deeper research, international collaboration, and new perspectives through cultural exploration.</p>
