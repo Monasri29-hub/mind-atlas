@@ -44,6 +44,10 @@ The sky background now remains visible after the renderer starts. A single respo
 
 Camera framing is calculated from the constructed geometry rather than a fixed distant viewpoint. The islands have finished edge lighting, supporting fins, cliff energy seams, and viewing rails. Other islands remain present during chapter transitions. Lighting and sky reflections provide clearer separation between architecture, rock, and atmosphere.
 
+Reduced-motion world changes move both the camera and its orbit pivot immediately. Animated flights start at the current inspected viewpoint, and dragging or zooming interrupts a flight. Toolbar changes recalculate marker placement without resetting the camera. The 3D control is disabled until the first successful frame; fallback mode directs visitors to the world navigation. Touch devices retain a conservative frame and resolution budget through orientation changes.
+
+`verify:navigation` runs 24 world transitions and camera handoffs using Three.js OrbitControls with no DOM element. These mathematical regression checks supplement the geometry checks; they do not replace interactive browser or device testing.
+
 ## The worlds
 
 | World | Visual identity | Portfolio focus |
@@ -87,6 +91,7 @@ Open `http://localhost:3000`.
 | `npm run dev` | Start the Next.js development server |
 | `npm run typecheck` | Check TypeScript without emitting files |
 | `npm run verify:worlds` | Verify world geometry, batching, chapter framing, connections, and project selection |
+| `npm run verify:navigation` | Verify instant world changes and inspected-camera handoffs with real OrbitControls |
 | `npm run build` | Generate the production website in `out/` |
 | `npm start` | Serve the generated `out/` directory locally |
 
@@ -104,6 +109,7 @@ Run `npm run build` before `npm start`. No environment variables are needed.
 | `components/WorldArchitecture.ts` | Shared materials and eight distinct world builders |
 | `components/WorldCatalog.ts` | World positions, route graph, and collision-aware numbered markers |
 | `components/SceneFraming.ts` | Camera framing from the real geometry, including instanced foliage |
+| `components/CameraNavigation.ts` | Camera and orbit-pivot synchronization for instant navigation and smooth handoffs |
 | `components/SceneBoundary.tsx` | Isolates GPU initialization failures from readable content |
 | `components/SceneBatch.ts` | Static architecture batching with independent animation and project picking |
 | `scripts/verify-worlds.mjs` | Renderer-independent geometry and scene checks |

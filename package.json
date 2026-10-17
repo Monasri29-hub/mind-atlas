@@ -8,7 +8,8 @@
     "build": "next build",
     "start": "serve out",
     "typecheck": "tsc --noEmit",
-    "verify:worlds": "node scripts/verify-worlds.mjs"
+    "verify:worlds": "node scripts/verify-worlds.mjs",
+    "verify:navigation": "node scripts/verify-navigation.mjs"
   },
   "dependencies": {
     "@types/node": "^26.6.1",

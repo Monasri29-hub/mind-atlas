@@ -7,12 +7,13 @@ import {buildMindGarden,buildIntelligenceNexus,buildProjectAtelier,buildCultural
 import {destinations,connections,SCENE_FOV,placeMarkers} from './WorldCatalog';
 import {batchWorld} from './SceneBatch';
 import {frameObjects} from './SceneFraming';
+import {captureView,syncOrbitView} from './CameraNavigation';
 type Props={reduced:boolean;active:string;inspect:boolean;onReady:()=>void;onFail:()=>void;onProject:(id:string)=>void;onWorld:(id:string)=>void};
 const rnd=(i:number)=>{const n=Math.sin(i*127.1+311.7)*43758.5453;return n-Math.floor(n)};
 export default function SkyScene(props:Props){
  const canvas=useRef<HTMLCanvasElement>(null),labels=useRef<HTMLDivElement>(null),current=useRef(props);current.current=props;
  useEffect(()=>{if(!canvas.current)return;let renderer:T.WebGLRenderer;try{renderer=new T.WebGLRenderer({canvas:canvas.current,alpha:true,antialias:true,powerPreference:'high-performance'});}catch{current.current.onFail();return;}
- let alive=true,reportedReady=false;const mobile=innerWidth<=720;const viewport=()=>canvas.current!.getBoundingClientRect();let rect=viewport();renderer.setPixelRatio(Math.min(devicePixelRatio,mobile?1.25:1.65));renderer.setSize(rect.width,rect.height,false);renderer.outputColorSpace=T.SRGBColorSpace;renderer.toneMapping=T.ACESFilmicToneMapping;renderer.toneMappingExposure=.95;
+ let alive=true,reportedReady=false;let mobile=innerWidth<=720;const coarse=matchMedia('(pointer: coarse)');const limited=()=>mobile||coarse.matches;const viewport=()=>canvas.current!.getBoundingClientRect();let rect=viewport();renderer.setPixelRatio(Math.min(devicePixelRatio,limited()?1.25:1.65));renderer.setSize(rect.width,rect.height,false);renderer.outputColorSpace=T.SRGBColorSpace;renderer.toneMapping=T.ACESFilmicToneMapping;renderer.toneMappingExposure=.95;
  const scene=new T.Scene();scene.fog=new T.Fog('#acd5e7',100,260);const camera=new T.PerspectiveCamera(SCENE_FOV,rect.width/rect.height,.2,400);const sunlight=new T.DirectionalLight('#fff0dc',2.6);sunlight.position.set(-30,60,30);scene.add(sunlight,new T.HemisphereLight('#edf6ff','#536d80',1.65));const rim=new T.DirectionalLight('#a5ddf4',.85);rim.position.set(30,12,-30);scene.add(rim);
  const skyReflection=new T.TextureLoader().load('/sky-atmosphere.webp',texture=>{if(!alive){texture.dispose();return}texture.mapping=T.EquirectangularReflectionMapping;texture.colorSpace=T.SRGBColorSpace;scene.environment=texture;scene.environmentIntensity=.35;dirty=true});
  const white=new T.MeshStandardMaterial({color:'#ede9df',metalness:.15,roughness:.55});
@@ -60,10 +61,10 @@ export default function SkyScene(props:Props){
  const controls=new OrbitControls(camera,canvas.current);controls.enableDamping=true;controls.dampingFactor=.08;controls.enablePan=false;controls.minDistance=8;controls.maxDistance=220;controls.maxPolarAngle=Math.PI*.49;controls.enabled=false;
  const frameCache=new Map<string,ReturnType<typeof frameObjects>>();
  function waypoint(){const id=current.current.active,key=id+':'+(rect.width/rect.height).toFixed(3);let view=frameCache.get(key);if(!view){view=frameObjects(id==='home'?groups:groups.filter(g=>g.userData.world===id),id,rect.width/rect.height);frameCache.set(key,view)}return view}
- const overview=waypoint();const target=new T.Vector3();camera.position.set(overview.x,overview.y,overview.z);
+ const overview=waypoint();const target=new T.Vector3(overview.lx,overview.ly,overview.lz);syncOrbitView(camera,controls,overview);
  let dirty=true,lastWorld='',lastInspect=false;
  let markerObstacles:{left:number;top:number;right:number;bottom:number}[]=[];
- const measureToolbar=()=>{const r=document.querySelector('.scene-tools')?.getBoundingClientRect();markerObstacles=r?[{left:r.left-rect.left-8,top:r.top-rect.top-8,right:r.right-rect.left+8,bottom:r.bottom-rect.top+8}]:[]};
+ const measureToolbar=()=>{markerObstacles=Array.from(document.querySelectorAll('.scene-heading,.scene-controls,.scene-destinations')).map(el=>{const r=el.getBoundingClientRect();return {left:r.left-rect.left-8,top:r.top-rect.top-8,right:r.right-rect.left+8,bottom:r.bottom-rect.top+8}})};
  let scrollTween:gsap.core.Tween|undefined;
  const flight={x:overview.x,y:overview.y,z:overview.z,lx:overview.lx,ly:overview.ly,lz:overview.lz};
  const labelElements=destinations.map((d,i)=>{
@@ -87,19 +88,22 @@ export default function SkyScene(props:Props){
  canvas.current.addEventListener('pointerdown',onDown);canvas.current.addEventListener('click',onClick);
  let raf=0,last=0,elapsed=0,lastReduced=false;const v=new T.Vector3(),clock=new T.Clock();
  const wake=()=>{dirty=true};controls.addEventListener('change',wake);
+ const onOrbitStart=()=>{scrollTween?.kill();dirty=true};controls.addEventListener('start',onOrbitStart);
  function frame(time:number){
   raf=requestAnimationFrame(frame);
-  if(document.hidden||time-last<1000/(mobile?30:45))return;
+  if(document.hidden||time-last<1000/(limited()?30:45))return;
   const dt=Math.min(clock.getDelta(),.05);last=time;
   const reduced=current.current.reduced;
   const world=current.current.active,inspect=current.current.inspect;
   if(world!==lastWorld||inspect!==lastInspect){
    rect=viewport();camera.aspect=rect.width/rect.height;camera.updateProjectionMatrix();renderer.setSize(rect.width,rect.height,false);
    measureToolbar();scrollTween?.kill();const next=waypoint();
-   if(reduced)Object.assign(flight,next);else scrollTween=gsap.to(flight,{...next,duration:1.1,ease:'power2.inOut',onUpdate:wake});
-   controls.enabled=inspect;canvas.current!.style.touchAction=inspect?'none':'pan-y';controls.target.set(next.lx,next.ly,next.lz);lastWorld=world;lastInspect=inspect;dirty=true;
+   const origin=captureView(camera,lastInspect?controls.target:target);if(!inspect&&!reduced){origin.x-=pointerX;origin.y-=pointerY}Object.assign(flight,origin);
+   if(reduced||!reportedReady){Object.assign(flight,next);syncOrbitView(camera,controls,next)}
+   else{syncOrbitView(camera,controls,origin);scrollTween=gsap.to(flight,{...next,duration:1.1,ease:'power2.inOut',onUpdate:wake})}
+   controls.enabled=inspect;canvas.current!.style.touchAction=inspect?'none':'pan-y';lastWorld=world;lastInspect=inspect;dirty=true;
   }
-  if(reduced!==lastReduced){if(reduced){scrollTween?.kill();Object.assign(flight,waypoint())}dirty=true;lastReduced=reduced}
+  if(reduced!==lastReduced){if(reduced){const next=inspect&&!scrollTween?.isActive()?captureView(camera,controls.target):waypoint();scrollTween?.kill();Object.assign(flight,next);syncOrbitView(camera,controls,flight)}dirty=true;lastReduced=reduced}
   if(reduced&&!dirty)return;
   if(!reduced)elapsed+=dt;
   if(inspect){if(scrollTween?.isActive()){camera.position.set(flight.x,flight.y,flight.z);controls.target.set(flight.lx,flight.ly,flight.lz)}controls.update();}
@@ -117,12 +121,13 @@ export default function SkyScene(props:Props){
   });
 
  }
- const resize=()=>{rect=viewport();camera.aspect=rect.width/rect.height;camera.updateProjectionMatrix();renderer.setSize(rect.width,rect.height,false);lastWorld='';dirty=true};
+ const resize=()=>{mobile=innerWidth<=720;rect=viewport();camera.aspect=rect.width/rect.height;camera.updateProjectionMatrix();renderer.setPixelRatio(Math.min(devicePixelRatio,limited()?1.25:1.65));renderer.setSize(rect.width,rect.height,false);lastWorld='';dirty=true};
  window.addEventListener('resize',resize);const canvasNode=canvas.current;
  const ro=new ResizeObserver(resize);ro.observe(canvasNode);
+ const toolbarObserver=new ResizeObserver(()=>{measureToolbar();dirty=true});const toolbar=document.querySelector('.scene-tools');if(toolbar)toolbarObserver.observe(toolbar);
  const contextLost=(e:Event)=>{e.preventDefault();current.current.onFail()};
  canvasNode.addEventListener('webglcontextlost',contextLost);raf=requestAnimationFrame(frame);
- return()=>{alive=false;cancelAnimationFrame(raf);scrollTween?.kill();ro.disconnect();controls.removeEventListener('change',wake);controls.dispose();window.removeEventListener('resize',resize);canvasNode.removeEventListener('pointermove',onPointer);canvasNode.removeEventListener('pointerdown',onDown);canvasNode.removeEventListener('click',onClick);canvasNode.removeEventListener('webglcontextlost',contextLost);labelElements.forEach(e=>e.remove());
+ return()=>{alive=false;cancelAnimationFrame(raf);scrollTween?.kill();ro.disconnect();toolbarObserver.disconnect();controls.removeEventListener('change',wake);controls.removeEventListener('start',onOrbitStart);controls.dispose();window.removeEventListener('resize',resize);canvasNode.removeEventListener('pointermove',onPointer);canvasNode.removeEventListener('pointerdown',onDown);canvasNode.removeEventListener('click',onClick);canvasNode.removeEventListener('webglcontextlost',contextLost);labelElements.forEach(e=>e.remove());
  const geometries=new Set<T.BufferGeometry>(),materials=new Set<T.Material>(),textures=new Set<T.Texture>();
  scene.traverse(o=>{if(o instanceof T.Mesh||o instanceof T.Line||o instanceof T.Sprite){if('geometry'in o)geometries.add(o.geometry);(Array.isArray(o.material)?o.material:[o.material]).forEach(m=>{materials.add(m);if('map'in m&&m.map instanceof T.Texture)textures.add(m.map)})}});
  geometries.forEach(g=>g.dispose());materials.forEach(m=>m.dispose());textures.forEach(t=>t.dispose());skyReflection.dispose();renderer.dispose();};

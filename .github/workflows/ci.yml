@@ -17,4 +17,5 @@ jobs:
       - run: npm ci
       - run: npm run typecheck
       - run: npm run verify:worlds
+      - run: npm run verify:navigation
       - run: npm run build
