@@ -9,8 +9,7 @@
 }
 *{box-sizing:border-box}
 [hidden]{display:none!important}
-html{min-height:100%;overflow-x:clip;overflow-y:auto;scroll-behavior:smooth;scroll-padding-top:var(--reading-top);scroll-padding-bottom:calc(var(--footer) + 24px);scrollbar-width:none}
-html::-webkit-scrollbar{display:none}
+html{min-height:100%;overflow-x:clip;overflow-y:auto;scroll-behavior:smooth;scroll-padding-top:var(--reading-top);scroll-padding-bottom:calc(var(--footer) + 24px);scrollbar-gutter:stable}
 body{margin:0;min-height:100%;overflow-x:clip}
 button,a,summary{-webkit-tap-highlight-color:transparent;touch-action:manipulation}
 button{font:inherit;color:inherit;cursor:pointer;background:none;border:0}
@@ -56,9 +55,10 @@ button:disabled{cursor:wait;opacity:.65}
 .view-note{font-size:13px;line-height:1.6;color:var(--muted);margin:6px 0 12px}
 .menu-explore{display:flex;align-items:center;justify-content:space-between;gap:12px;width:100%;min-height:48px;text-align:left;font-size:14px;font-weight:600;border-top:1px solid var(--line);padding:12px 0}
 
-/* One document scroll; the selected details never create a nested scroller. */
-#journey{position:relative;z-index:3;width:var(--reader-width);min-height:100svh;margin-left:var(--edge-left);padding:var(--reading-top) 0 calc(var(--footer) + 24px)}
-.chapter{position:relative;margin:0;scroll-margin-top:var(--reading-top)}
+/* Restore the continuous chapter journey beside the live 3D background. */
+#journey{position:relative;z-index:3;width:var(--reader-width);margin-left:var(--edge-left)}
+.chapter{position:relative;min-height:100svh;display:flex;align-items:center;margin:0;padding:var(--reading-top) 0 calc(var(--footer) + 40px);scroll-margin-top:0}
+.projects-chapter{align-items:flex-start}
 .chapter:last-child{margin-bottom:0}
 .chapter:focus{outline:none}
 .chapter:focus-visible .reading-panel{outline:3px solid #087494;outline-offset:-4px}
@@ -239,6 +239,7 @@ button:disabled{cursor:wait;opacity:.65}
  .world-stage{left:0;right:0;top:var(--header);height:var(--scene-height);bottom:auto;z-index:4;background:#a6cee5 url('/sky-atmosphere.webp') center/cover no-repeat}
  .scene-tools{left:var(--edge-left);right:var(--edge-right);top:calc(var(--header) + 8px)}
  #journey{width:calc(100% - var(--edge-left) - var(--edge-right))}
+ .chapter{align-items:flex-start;min-height:110svh}
  .reading-panel{padding:28px}
  .section-heading h2{font-size:clamp(38px,5.5vw,50px)}
  .world-navigation,.motion-toggle,.travel-status{display:none}

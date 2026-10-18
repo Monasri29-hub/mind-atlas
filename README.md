@@ -10,7 +10,7 @@ A cinematic floating-island portfolio built with Next.js, React, TypeScript, Thr
 
 ## Experience
 
-- Live Three.js worlds with explicit destination travel and connected sky routes. Reading never changes the active world.
+- Live Three.js worlds with restored scroll-driven chapter travel and connected sky routes.
 - Eight worlds with different architecture, symbols, colors, and atmospheres.
 - Five project case studies with the problem, contribution, workflow, technologies, and outcome.
 - Opaque editorial reading panels, prominent world titles, and named destination navigation.
@@ -34,7 +34,7 @@ All eight worlds are implemented as procedural, real-time Three.js environments:
 - **Technology — The Systems Nexus:** exposed cantilevered layers connecting data stores, model modules, application interfaces, and a visible infrastructure spine.
 - **Future — The Open Horizon:** solid crescent steps, a supported stylized Earth, and unfinished light routes toward higher studies, research, and global exploration.
 
-Choose a world from the navigation or island markers to travel through the actual 3D universe. Only its details are shown, in normal document flow; one page scroll replaces the separate text-panel scroller, and the visible page scrollbar is removed. Destination resets scroll smoothly unless reduced motion is enabled. Scrolling leaves the camera in place. **Orbit world** enables drag/pinch exploration and expands the same scene; **Adjust view** exposes named camera buttons. **Read details** or Escape restores the reading region. Project exhibits open the same case studies as the project list.
+Scroll through the continuous overview and eight world chapters to travel through the actual 3D universe, as in the original experience. The camera follows the current chapter; the normal page scrollbar is visible, and there is no separate text-panel scroller. Navigation and island markers also take you directly to a chapter. **Orbit world** enables drag/pinch exploration and expands the same scene; **Adjust view** exposes named camera buttons. **Read details** or Escape restores the reading region. Project exhibits open the same case studies as the project list.
 
 All islands, architecture, landmarks, routes, and refinements use actual mesh geometry. Concept artwork remains reference material and is not used as island cards. A GPU error boundary keeps rendering failures isolated from the readable content. Loading/failure states use text and retry controls rather than replacing the worlds with illustrations.
 
@@ -42,7 +42,7 @@ Opaque static architecture is batched by material within each world. Animated ob
 
 ## Layout and atmosphere repair
 
-The [live 3D restoration](docs/Live_3D_Restoration.md) removes the rejected image-led experiment. Desktop uses a selected-world reading panel beside the live stage. Phone/tablet portrait uses a live stage above the reading region; small-screen landscape uses side-by-side regions. Small floating controls replace the additional full-width toolbar. Content cannot scroll over the canvas or its controls. Existing content remains available for the later information pass.
+The [live 3D restoration](docs/Live_3D_Restoration.md) removes the rejected image-led experiment and restores the original chapter scrolling. Desktop uses continuous reading panels beside the live stage. Phone/tablet portrait uses a live stage above the reading region; small-screen landscape uses side-by-side regions. Small floating controls replace the additional full-width toolbar. Content cannot scroll over the canvas or its controls. Existing content remains available for the later information pass.
 
 Every world also has new modeled details: cognitive memory lattices, volumetric AI interfaces, a five-bay gallery pergola, a cultural armillary, articulated fabrication arms, observatory instruments, service cabling, and future destination arches. These additions are material-batched with the existing architecture where possible.
 
@@ -84,7 +84,7 @@ Static HTML and component-rendering checks cover nine sections, five cards and f
 
 ### Phase 5 — cinematic travel and interaction
 
-Each world has a deliberate arrival angle fitted to its actual geometry. Direct links select their destination once, expose its content immediately, and animate the camera along a short eased route. Reading scroll stays local to that destination, without camera changes or scene gesture forwarding. Inspection preserves the current pose, supports reset view, and keeps its viewpoint during resize. Pointer movement eases gently; travelling feedback and reduced-motion handling keep navigation predictable.
+Each world has a deliberate arrival angle fitted to its actual geometry. Direct links select their destination once, place its chapter in view, and animate the camera along a short eased route. Normal document scrolling drives the current chapter and background camera, using the original 25% viewport threshold. Inspection preserves the current pose, supports reset view, and keeps its viewpoint during resize. Pointer movement eases gently; travelling feedback and reduced-motion handling keep navigation predictable.
 
 Camera checks cover preset/orbit handoffs, opposite viewing directions, flight continuity, interruption, and pivot clearance. Eight regenerated fallback views match the new arrivals. Live browser and device verification remains outstanding. See [the Phase 5 implementation notes](docs/Phase_5_Cinematic_Travel.md).
 

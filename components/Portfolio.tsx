@@ -21,6 +21,8 @@ export default function Portfolio(){
   const index=worlds.findIndex(w=>w[0]===id),section=document.getElementById(id);
   if(index<0||!section)return;
   setActive(index);setMenu(false);if(!keepInspect)setInspect(false);
+  // Restore the original chapter position once; the camera handles the flight.
+  window.scrollTo({top:window.scrollY+section.getBoundingClientRect().top,behavior:'instant'});
   if(record&&location.hash!==`#${id}`)history.pushState(null,'',`#${id}`);
   cancelAnimationFrame(focusFrame.current);
   if(focus&&!keepInspect)focusFrame.current=requestAnimationFrame(()=>section.focus({preventScroll:true}));
@@ -46,8 +48,15 @@ export default function Portfolio(){
   const restore=()=>{const id=location.hash.slice(1)||'home';if(worlds.some(w=>w[0]===id))go(id,false,false,false)};
   restore();window.addEventListener('hashchange',restore);return()=>window.removeEventListener('hashchange',restore);
  },[go]);
- // Reading never changes the world or interrupts the camera. Travel is explicit.
- useEffect(()=>{window.scrollTo({top:0,behavior:'auto'})},[active]);
+ // The document journey drives the same live background, as in the original flow.
+ useEffect(()=>{
+  if(inspect)return;let frame=0;
+  const chapters=Array.from(document.querySelectorAll<HTMLElement>('#journey .chapter'));
+  const update=()=>{frame=0;let index=0;chapters.forEach((chapter,i)=>{if(chapter.getBoundingClientRect().top<=innerHeight*.25)index=i});setActive(index)};
+  const schedule=()=>{if(!frame)frame=requestAnimationFrame(update)};
+  schedule();window.addEventListener('scroll',schedule,{passive:true});window.addEventListener('resize',schedule);
+  return()=>{cancelAnimationFrame(frame);window.removeEventListener('scroll',schedule);window.removeEventListener('resize',schedule)};
+ },[inspect]);
  useEffect(()=>{if(!selected){dialog.current?.close();return}if(!dialog.current?.open)dialog.current?.showModal()},[selected]);
  useEffect(()=>{
   if(!inspect&&!selected)return;
@@ -98,7 +107,7 @@ export default function Portfolio(){
   </div>
   <SceneTools active={world} ready={ready} failed={failed} inspect={inspect} traveling={traveling} onView={()=>{setReady(false);setFailed(false);setSceneEpoch(value=>value+1)}} onReset={()=>setResetView(value=>value+1)} onViewAction={action=>setViewCommand(value=>({sequence:value.sequence+1,action}))} onInspect={()=>inspect?go(world,false,true,false):openWorld(world)}/>
   <PortfolioHeader active={active} menu={menu} onMenu={toggleMenu} reduced={reduced} onMotion={toggleMotion} onExplore={()=>openWorld(world)} buttonRef={menuButton} menuRef={menuPanel}/>
-  <PortfolioSections onProject={openProject} inspect={inspect} active={world}/>
+  <PortfolioSections onProject={openProject} inspect={inspect}/>
   <PortfolioFooter active={active} ready={ready} reduced={reduced} onMotion={toggleMotion} onMenu={toggleMenu} menu={menu}/>
   <ProjectDetails project={selected} dialogRef={dialog} onClose={closeProject}/>
  </div>;

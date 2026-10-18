@@ -1,6 +1,6 @@
 # Live 3D restoration and world refinement
 
-17 October 2026
+Updated 18 October 2026
 
 The illustrated browsing experiment was rejected by Mona. It is superseded by this implementation: the actual Three.js floating universe is the primary experience again. There are no island image cards, image-atlas sprites, or separate picture-led browsing mode. `WorldVisual.tsx` has been removed. Existing concept art remains a design reference, not the scene.
 
@@ -10,12 +10,12 @@ One renderer stays mounted while visitors read, scroll, change worlds, and enter
 
 The scene and reading region have separate viewport rectangles rather than allowing long panels to cross a fixed canvas:
 
-- Desktop: selected-world content in normal document flow on the left; fixed live 3D with small floating name and orbit controls on the right. The scene reaches the main header, with no extra toolbar strip.
-- Phone/tablet portrait: live 3D above with overlaid compact controls, selected-world reading region below, destination navigator at the bottom.
+- Desktop: all chapters in their original continuous document journey on the left; fixed live 3D with small floating name and orbit controls on the right. The scene reaches the main header, with no extra toolbar strip.
+- Phone/tablet portrait: live 3D above with overlaid compact controls, the continuous reading journey below, destination navigator at the bottom.
 - Small-screen landscape at 560px and above: side-by-side regions preserve useful reading height.
 - Orbit mode: the same renderer expands, the reading rail becomes inert/hidden, and Read details restores it. Reset and optional button-based orbit/zoom remain available.
 
-Reading no longer changes the world or starts camera travel. Only the selected chapter is visible and keyboard-accessible; all five projects remain available together when Projects is selected. The document is the sole page scroller: no fixed-height or overflow-scrolling reading panel and no visible page scrollbar. Wheel, trackpad, touch, and keyboard scrolling use the browser's native document flow. CSS smooth scrolling handles destination resets; reduced-motion preferences retain instant scrolling. World navigation, island markers, and URL fragments select a destination and return the page to its top. Returning from orbit preserves the reading position. Touch gestures over the scene can pan the document in reading mode, with browser pinch zoom available; orbit mode retains its actual drag/pinch/zoom camera controls and locks document scrolling. The main landmark remains named and keyboard-focusable. On portrait devices the fixed scene masks content passing underneath, with scroll padding reserving its height for focus targets.
+The original scroll-driven background behavior is restored. All nine chapters (overview plus eight worlds) remain visible in one document; a passive window scroll listener selects the chapter passing the original 25% viewport threshold and travels the live camera to its island. The normal page scrollbar is visible again. There is no nested text-panel scroller or per-world page replacement. All five projects remain together in Projects. Wheel, trackpad, touch, and keyboard gestures use native page scrolling. Direct navigation and URL fragments place the document at the chosen chapter once, with the camera animating its route rather than visiting intervening chapters. Touch gestures over the scene can pan the document in reading mode, with browser pinch zoom available; orbit mode retains its actual drag/pinch/zoom camera controls and locks document scrolling. The main landmark remains named and keyboard-focusable. The modeled refinements, readable content cards, and compact floating controls are retained; the recent navigation-only experiment is superseded.
 
 Loading and WebGL failure states use text and a retry action, without substituting island illustrations. The readable portfolio remains available when rendering fails. The sky image is used only as atmosphere/reflection texture; all islands, buildings, landmarks, routes, and added details are mesh geometry.
 

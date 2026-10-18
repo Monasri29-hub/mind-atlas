@@ -146,5 +146,5 @@ export default function SkyScene(props:Props){
  geometries.forEach(g=>g.dispose());materials.forEach(m=>m.dispose());textures.forEach(t=>t.dispose());skyReflection.dispose();sunlight.shadow.dispose();renderer.dispose();};
  },[]);
  useEffect(()=>refresh.current(),[props.active,props.inspect,props.resetView,props.reduced,props.paused,props.viewCommand.sequence]);
- return <><canvas ref={canvas} className="sky-canvas" aria-label="Eight connected floating worlds, each with distinct architecture. Five projects share one Project Atelier. Choose a world using the navigation or island markers. Use Orbit world to inspect the geometry and Read details to return." role="img"/><div ref={labels} className="island-labels"/></>
+ return <><canvas ref={canvas} className="sky-canvas" aria-label="Eight connected floating worlds, each with distinct architecture. Five projects share one Project Atelier. Scroll through the portfolio to travel between worlds, or choose a destination using the navigation or island markers. Use Orbit world to inspect the geometry and Read details to return." role="img"/><div ref={labels} className="island-labels"/></>
 }
